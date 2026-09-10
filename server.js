@@ -93,31 +93,50 @@ app.get('/api/state', (req, res)=>{
 function deletePostHandler(req, res){
   try{
     const body = req.body || {};
-    const rawPostId = body.postId || req.params.id;
+    const rawPostId = body.postId ?? req.params.id ?? req.query.id;
     const postId = Number(rawPostId);
-    const { userId, username, passwordHash } = body;
-    if(!postId || !userId || !passwordHash) return res.status(400).json({ error: 'missing_credentials' });
+    const userId = Number(body.userId ?? req.query.userId ?? body.user_id);
+    const username = body.username ?? req.query.username;
+    const passwordHash = body.passwordHash ?? body.password ?? req.query.passwordHash;
+
+    if(!postId || !userId || !passwordHash) {
+      return res.status(400).json({ error: 'missing_credentials' });
+    }
+
     const db = readDB();
     const current = db.state || {};
-    const user = (current.users || []).find(item => item.id === userId && item.pass === passwordHash && (!username || item.name === username));
+    const user = (current.users || []).find(item => {
+      const idMatches = Number(item.id) === Number(userId);
+      const passMatches = item.pass === passwordHash;
+      const nameMatches = !username || item.name === username;
+      return idMatches && passMatches && nameMatches;
+    });
+
     if(!user) return res.status(403).json({ error: 'invalid_user' });
-    const post = (current.posts || []).find(item => item.id === postId);
+    const post = (current.posts || []).find(item => Number(item.id) === Number(postId));
     if(!post) return res.status(404).json({ error: 'post_not_found' });
     if(post.authorId !== user.id && post.author !== user.name) return res.status(403).json({ error: 'not_post_author' });
-    const deletedPostIds = Array.from(new Set([...(current.deletedPostIds || []), postId]));
+
+    const deletedPostIds = Array.from(new Set([...(current.deletedPostIds || []), Number(postId)]));
     const nextState = {
       ...current,
       deletedPostIds,
-      posts: (current.posts || []).filter(item => item.id !== postId),
-      saved: (current.saved || []).filter(id => id !== postId),
-      reports: (current.reports || []).filter(report => report.postId !== postId)
+      posts: (current.posts || []).filter(item => Number(item.id) !== Number(postId)),
+      saved: (current.saved || []).filter(id => Number(id) !== Number(postId)),
+      reports: (current.reports || []).filter(report => Number(report.postId) !== Number(postId))
     };
-    if(!writeDB({ state: nextState, updatedAt: Date.now() })) return res.status(500).json({ error: 'write_failed' });
+
+    const persisted = writeDB({ state: nextState, updatedAt: Date.now() });
+    if(!persisted) return res.status(500).json({ error: 'write_failed' });
+
     const verified = readDB();
-    if((verified.state.posts || []).some(item => item.id === postId)) return res.status(500).json({ error: 'delete_not_persisted' });
-    res.json({ ok: true });
+    if((verified.state.posts || []).some(item => Number(item.id) === Number(postId))) {
+      return res.status(500).json({ error: 'delete_not_persisted' });
+    }
+
+    res.json({ ok: true, deletedPostId: Number(postId) });
   }catch(error){
-    console.error('POST /api/post/delete error:', error.message);
+    console.error('DELETE /api/post/:id error:', error.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 }

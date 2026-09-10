@@ -2231,17 +2231,24 @@
         const idx = state.posts.findIndex(p => p.id === id);
         if(idx === -1) return;
         const post = state.posts[idx];
-        // allow delete only for actual post author (prefer id match)
         const isAuthor = (post.authorId && state.user.id && post.authorId === state.user.id) || (!post.authorId && post.author === state.user.name);
         if(!isAuthor) return alert('Sadece kendi gönderini silebilirsin.');
         if(!confirm('Gönderiyi silmek istediğine emin misin?')) return;
         if(!state.user.id || !state.user.pass) return alert('Bu işlem için kayıtlı hesabınızla giriş yapmalısınız.');
+
         fetch(`/api/post/${encodeURIComponent(id)}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: state.user.id, username: state.user.name, passwordHash: state.user.pass })
-        }).then(response => {
-            if(!response.ok) throw new Error('Gönderi sunucudan silinemedi.');
+            body: JSON.stringify({
+                userId: state.user.id,
+                username: state.user.name,
+                passwordHash: state.user.pass
+            })
+        }).then(async response => {
+            const data = await response.json().catch(() => ({}));
+            if(!response.ok) {
+                throw new Error(data.error || 'Gönderi sunucudan silinemedi.');
+            }
             state.posts.splice(idx, 1);
             state.saved = (state.saved || []).filter(savedId => savedId !== id);
             if(state.user.votes && state.user.votes[id]) delete state.user.votes[id];
