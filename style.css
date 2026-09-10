@@ -1,0 +1,100 @@
+/* Modern Reddit-style enhancements */
+:root{
+    --accent:#ff4500;
+}
+
+/* Keep base theme but improve spacing and responsiveness */
+body{background:linear-gradient(180deg,#060607 0%, #0b0b0d 100%);}
+
+.app-container{padding:16px;}
+
+/* Make post cards slightly elevated */
+.post-card{box-shadow: 0 6px 18px rgba(0,0,0,0.5); transition: transform .14s ease, box-shadow .14s ease; overflow:hidden; border-radius:10px}
+.post-card:hover{transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.6);}
+
+.post-title{color:var(--text-main);}
+.post-meta a.sub-tag{color:var(--accent);}
+
+/* Responsive */
+@media (max-width: 980px){
+    .app-container{grid-template-columns: 1fr; padding:12px;}
+    .sidebar-left, .sidebar-right{display:none}
+}
+
+/* Vote box highlight */
+.vote-box span{font-weight:700; color: #ffdcdc;}
+.vote-btn .fa-chevron-up{color: #cfcfcf}
+
+/* Buttons */
+.btn-primary{background:var(--accent); color:#fff}
+
+/* Compact post body */
+.post-body{max-height:240px; overflow:hidden}
+
+/* Simple badge */
+.post-tag{border:1px solid rgba(255,255,255,0.03); padding:3px 6px}
+
+/* Modal tweaks */
+.modal{backdrop-filter: blur(4px)}
+
+/* Minor utilities */
+.hidden{display:none}
+
+/* Improve accessibility focus */
+.nav-link:focus, .btn-primary:focus, .vote-btn:focus, .action-btn:focus{outline:2px solid rgba(255,69,0,0.18); outline-offset:2px}
+
+/* media preview */
+.post-image{
+    width:100%;
+    height:auto;
+    max-height:480px;
+    object-fit:contain;
+    border-radius:8px;
+    display:block;
+    margin:8px 0;
+}
+
+/* preview container limit to avoid unlimited growth */
+#post-media-preview{
+    max-height:360px;
+    overflow:auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#comment-media-preview{
+    max-height:260px;
+    overflow:auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-top:8px;
+}
+
+/* emoji picker */
+/* emoji picker removed */
+
+/* profile avatar preview */
+#profile-avatar-preview img{border-radius:50%}
+/* voted state */
+.vote-btn.voted{opacity:0.6; cursor:default}
+.vote-btn[disabled]{opacity:0.6; cursor:default}
+
+/* voted states */
+.vote-btn.voted-up i{color:var(--accent)}
+.vote-btn.voted-down i{color:#60a5fa}
+
+/* feed header controls */
+.feed-controls{display:flex; gap:8px; align-items:center}
+.feed-controls .select-field{width:auto}
+
+/* Hero */
+.hero{background:linear-gradient(90deg, rgba(96,165,250,0.08), rgba(139,92,246,0.06)); border:1px solid var(--border-color); padding:16px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px}
+.hero .hero-left{display:flex; gap:12px; align-items:center}
+.hero .hero-title{font-weight:700}
+.hero .hero-cta{margin-left:auto}
+
+/* Sidebar suggestion panel */
+/* Demo post placeholder */
+.empty-placeholder{padding:24px; text-align:center; color:var(--text-muted); border:1px dashed var(--border-color); border-radius:8px}

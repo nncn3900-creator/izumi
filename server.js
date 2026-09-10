@@ -134,7 +134,7 @@ app.post('/api/account/delete', (req, res)=>{
 app.get('/db.json', (req, res)=>res.status(404).json({ error: 'not_found' }));
 
 // serve static files (frontend)
-app.use(express.static(path.join(__dirname), { dotfiles: 'deny', index: false }));
+app.use(express.static(__dirname));
 
 // serve izumi.html as root
 app.get('/', (req, res)=>{
