@@ -64,7 +64,10 @@ function mergeByKey(existing, incoming, key){
 function mergeState(current, incoming){
   const previous = current || {};
   const next = incoming || {};
-  const deletedPostIds = Array.from(new Set([...(previous.deletedPostIds || []), ...(next.deletedPostIds || [])]));
+  const deletedPostIds = Array.from(new Set([
+    ...(previous.deletedPostIds || []),
+    ...(next.deletedPostIds || [])
+  ].map(id => Number(id)).filter(Number.isFinite)));
   return {
     ...previous,
     ...next,

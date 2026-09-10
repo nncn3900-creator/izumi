@@ -1036,6 +1036,7 @@
             { name: 'yazilim', desc: 'Kodlama, yazılım ve teknoloji.' }
         ],
         posts: JSON.parse(localStorage.getItem('iz_posts')) || [],
+        deletedPostIds: JSON.parse(localStorage.getItem('iz_deleted_post_ids')) || [],
         saved: JSON.parse(localStorage.getItem('iz_saved')) || [],
         reports: JSON.parse(localStorage.getItem('iz_reports')) || [],
         activeSubs: JSON.parse(localStorage.getItem('iz_active_subs')) || [],
@@ -1051,6 +1052,7 @@
         localStorage.setItem('iz_user', JSON.stringify(state.user));
         localStorage.setItem('iz_subs', JSON.stringify(state.subs));
         localStorage.setItem('iz_posts', JSON.stringify(state.posts));
+        localStorage.setItem('iz_deleted_post_ids', JSON.stringify(state.deletedPostIds || []));
         localStorage.setItem('iz_saved', JSON.stringify(state.saved));
         localStorage.setItem('iz_reports', JSON.stringify(state.reports || []));
         localStorage.setItem('iz_active_subs', JSON.stringify(state.activeSubs || []));
@@ -1270,8 +1272,10 @@
             }
             const s = data.state;
             const localUser = state.user;
+            const deletedPostIds = new Set([...(state.deletedPostIds || []), ...(s.deletedPostIds || [])].map(Number));
+            state.deletedPostIds = Array.from(deletedPostIds);
             if(Array.isArray(s.subs)) state.subs = mergeRecords(state.subs, s.subs, 'name');
-            if(Array.isArray(s.posts)) state.posts = mergeRecords(state.posts, s.posts, 'id');
+            if(Array.isArray(s.posts)) state.posts = mergeRecords(state.posts, s.posts, 'id').filter(post => !deletedPostIds.has(Number(post.id)));
             if(Array.isArray(s.users)) state.users = mergeRecords(state.users, s.users, 'id');
             if(Array.isArray(s.saved)) state.saved = Array.from(new Set([...(state.saved || []), ...s.saved]));
             if(Array.isArray(s.activeSubs)) state.activeSubs = Array.from(new Set([...(state.activeSubs || []), ...s.activeSubs]));
@@ -1309,9 +1313,11 @@
             const data = await res.json();
             if(!data || !data.state) return;
             const incoming = data.state;
+            const deletedPostIds = new Set([...(state.deletedPostIds || []), ...(incoming.deletedPostIds || [])].map(Number));
+            state.deletedPostIds = Array.from(deletedPostIds);
             const changed = JSON.stringify(incoming.posts || []) !== JSON.stringify(state.posts || []) || JSON.stringify(incoming.subs || []) !== JSON.stringify(state.subs || []) || JSON.stringify(incoming.notifications || []) !== JSON.stringify(state.notifications || []);
             if(!changed) return;
-            if(Array.isArray(incoming.posts)) state.posts = mergeRecords(state.posts, incoming.posts, 'id');
+            if(Array.isArray(incoming.posts)) state.posts = mergeRecords(state.posts, incoming.posts, 'id').filter(post => !deletedPostIds.has(Number(post.id)));
             if(Array.isArray(incoming.subs)) state.subs = mergeRecords(state.subs, incoming.subs, 'name');
             if(Array.isArray(incoming.users)) state.users = mergeRecords(state.users, incoming.users, 'id');
             if(Array.isArray(incoming.notifications)) state.notifications = mergeRecords(state.notifications, incoming.notifications, 'id');
@@ -2246,12 +2252,14 @@
             })
         }).then(async response => {
             const data = await response.json().catch(() => ({}));
-            if(!response.ok) {
+            if(!response.ok && data.error !== 'post_not_found') {
                 throw new Error(data.error || 'Gönderi sunucudan silinemedi.');
             }
             state.posts.splice(idx, 1);
+            state.deletedPostIds = Array.from(new Set([...(state.deletedPostIds || []), Number(id)]));
             state.saved = (state.saved || []).filter(savedId => savedId !== id);
             if(state.user.votes && state.user.votes[id]) delete state.user.votes[id];
+            saveState();
             renderPosts();
             renderProfile();
         }).catch(error => alert(error.message));
