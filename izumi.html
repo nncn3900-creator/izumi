@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>izanai - Anonim & Özgür Akış</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Cpath d='M50 15v70M29 25v23l21 13 21-13V25M29 48l-11-8M71 48l11-8M34 72h32' fill='none' stroke='%23ffffff' stroke-width='8' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        /* === IZANAI PURE DARK THEME === */
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #121215;
+            --bg-tertiary: #1c1c21;
+            --bg-hover: #26262e;
+            --border-color: #27272a;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --accent: #e4e4e7;
+            --accent-subtle: #3f3f46;
+            --danger: #ef4444;
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* App Layout */
+        .app-container {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            display: grid;
+            grid-template-columns: 240px 1fr 300px;
+            gap: 20px;
+            padding: 20px clamp(16px, 3vw, 48px);
+        }
+
+        /* Common desktop widths: 1280, 1366, 1920 and 2560 pixels. */
+        @media (min-width: 1366px) {
+            .app-container {
+                grid-template-columns: 250px minmax(0, 1fr) 320px;
+                gap: 24px;
+                padding: 24px clamp(24px, 3vw, 64px);
+            }
+        }
+
+        @media (min-width: 1920px) {
+            .app-container {
+                grid-template-columns: 280px minmax(0, 1fr) 360px;
+                gap: 28px;
+                padding: 28px clamp(28px, 3vw, 80px);
+            }
+        }
+
+        @media (min-width: 2560px) {
+            .app-container {
+                grid-template-columns: 320px minmax(0, 1fr) 400px;
+                gap: 32px;
+                padding: 32px clamp(32px, 3vw, 96px);
+            }
+        }
+
+        /* Navigation / Sidebar Left */
+        .sidebar-left {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            padding: 8px 12px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-mark {
+            width: 28px;
+            height: 28px;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .logo-mark path,
+        .hero-logo path {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 8;
+            stroke-linecap: square;
+            stroke-linejoin: miter;
+        }
+
+        .hero-logo {
+            width: 56px;
+            height: 56px;
+            padding: 12px;
+            border-radius: 10px;
+            background: #000;
+            color: #fff;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--bg-tertiary);
+            color: var(--text-main);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-hover);
+        }
+
+        /* Main Content */
+        .main-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Post Card */
+        .post-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            gap: 14px;
+        }
+
+        .vote-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+        }
+
+        .vote-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .vote-btn:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-main);
+        }
+
+        .post-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .post-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sub-tag {
+            color: var(--text-main);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .post-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .post-body {
+            font-size: 0.95rem;
+            color: #d4d4d8;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .notification-badge {
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 9px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-results {
+            display: none;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+        }
+
+        .search-result-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 4px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .search-result-item:last-child { border-bottom: 0; }
+        .profile-counts { display: flex; gap: 12px; color: var(--text-muted); font-size: 0.8rem; margin-top: 8px; }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+        }
+
+        .action-btn:hover {
+            color: var(--text-main);
+        }
+
+        /* Sidebar Right / Profile & Sub Info */
+        .sidebar-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* Profile Card */
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .input-field, .textarea-field, .select-field {
+            width: 100%;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .input-field:focus, .textarea-field:focus {
+            border-color: var(--accent-subtle);
+        }
+
+        .textarea-field {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        /* Extra Elements */
+        .search-bar {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .post-tag {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tag-nsfw { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .tag-spoiler { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+        .post-image {
+            width: 100%;
+            max-height: 350px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .comments-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comment-card {
+            background-color: var(--bg-primary);
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
+        .post-card.is-expanded {
+            border-color: var(--accent-subtle);
+        }
+
+        .inline-comments {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .inline-comment-form {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .inline-comment-form .textarea-field {
+            min-height: 54px;
+        }
+
+        .comment-meta {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+        .author-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            color: var(--text-main);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .author-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .author-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .post-sub-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 7px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .post-author-karma {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .post-image {
+            display: block;
+            min-height: 160px;
+            background: var(--bg-primary);
+        }
+
+        .post-image video,
+        video.post-image,
+        .post-image img,
+        img.post-image {
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            max-height: min(78vh, 900px);
+            min-height: 0;
+            object-fit: contain;
+            object-position: center;
+            margin-left: auto;
+            margin-right: auto;
+            background: #000;
+        }
+
+        .nsfw-media {
+            position: relative;
+            overflow: hidden;
+            margin-top: 8px;
+            border-radius: var(--radius);
+            background: #000;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .nsfw-media > .post-image {
+            margin-top: 0;
+            filter: blur(24px);
+            transform: scale(1.06);
+            transition: filter 0.2s ease, transform 0.2s ease;
+        }
+
+        .nsfw-media.is-revealed > .post-image {
+            filter: none;
+            transform: none;
+        }
+
+        .nsfw-warning {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.32);
+            font-size: 0.85rem;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .nsfw-media.is-revealed > .nsfw-warning {
+            display: none;
+        }
+
+        .site-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .site-stat {
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .site-stat strong {
+            display: block;
+            font-size: 1.15rem;
+            color: var(--text-main);
+        }
+
+        .site-stat span {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .feed-tabs {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .feed-tab {
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            border-radius: var(--radius);
+            padding: 8px 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .feed-tab.active, .feed-tab:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-main);
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .post-tag-link {
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.78rem;
+        }
+
+        @media (max-width: 900px) {
+            .app-container { grid-template-columns: 190px 1fr; }
+            .sidebar-right { display: none; }
+        }
+
+        @media (max-width: 640px) {
+            .app-container { display: block; padding: 12px; }
+            .sidebar-left { position: static; margin-bottom: 14px; }
+            .sidebar-left > .nav-link, .sidebar-left > .btn-primary, .sidebar-left > div:not(.brand) { display: none; }
+            .sidebar-left .brand { padding-left: 0; }
+            .main-feed { gap: 12px; }
+            .feed-header { align-items: flex-start; gap: 10px; flex-direction: column; }
+            .feed-controls, .feed-controls .select-field { width: 100%; }
+            .post-card { padding: 12px; gap: 8px; }
+            .vote-box { min-width: 28px; }
+            .post-actions { flex-wrap: wrap; gap: 10px; }
+            .modal { width: calc(100% - 24px); max-height: 92vh; overflow-y: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- SOL MENÜ -->
+    <aside class="sidebar-left">
+        <div class="brand">
+            <svg class="logo-mark" viewBox="0 0 100 100" aria-label="izanai logosu" role="img">
+                <path d="M50 15v70M29 25v23l21 13 21-13V25M29 48l-11-8M71 48l11-8M34 72h32"></path>
+            </svg>
+            izanai
+        </div>
+        <div style="padding:8px 12px; color:var(--text-muted); font-size:0.9rem; display:flex; align-items:center; gap:8px;"><span data-i18n="session">Oturum</span>: <div id="current-user-avatar" style="width:28px; height:28px; border-radius:6px; background:var(--muted-bg); display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem">A</div> <span id="current-user">Anon</span></div>
+        <a class="nav-link active" onclick="filterFeed('all')"><i class="fa-solid fa-house"></i> <span data-i18n="home">Ana Akış</span></a>
+        <a class="nav-link" onclick="openNotifications()"><i class="fa-solid fa-bell"></i> <span data-i18n="notifications">Bildirimler</span> <span id="notification-count" class="notification-badge" style="display:none">0</span></a>
+        <a class="nav-link" onclick="openModal('modal-login')"><i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="loginAccounts">Oturum Aç / Hesaplar</span></a>
+        <a class="nav-link" onclick="openModal('modal-sub')"><i class="fa-solid fa-plus"></i> <span data-i18n="createSub">Sub Oluştur</span></a>
+        <a class="nav-link" onclick="openModal('modal-profile')"><i class="fa-solid fa-user-gear"></i> <span data-i18n="profileSettings">Profil Ayarları</span></a>
+        <a class="nav-link" onclick="openModal('modal-settings')"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">Ayarlar</span></a>
+        <button class="btn-primary" onclick="openPostComposer()"><i class="fa-solid fa-pen"></i> <span data-i18n="sharePost">Post Paylaş</span></button>
+        <div style="margin-top:12px;">
+            <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:8px; font-weight:600;" data-i18n="activeSubs">Aktif Sub'lar</div>
+            <div id="active-subs-list" style="display:flex; flex-direction:column; gap:6px;">
+                <!-- Dinamik: state.activeSubs -->
+            </div>
+        </div>
+    </aside>
+
+    <!-- ANAMETİN / AKIŞ -->
+    <main class="main-feed">
+        <input type="text" class="input-field search-bar" id="search-input" placeholder="Akışta ara (başlık veya içerik)..." data-placeholder-tr="Akışta ara (başlık veya içerik)..." data-placeholder-en="Search the feed (title or content)..." oninput="searchPosts()">
+        <div id="search-results" class="search-results"></div>
+        <div class="feed-tabs" aria-label="Akış türleri">
+            <button class="feed-tab active" data-feed-mode="all" onclick="setFeedMode('all')" data-i18n="all">Tümü</button>
+            <button class="feed-tab" data-feed-mode="following" onclick="setFeedMode('following')" data-i18n="following">Takip Ettiklerim</button>
+            <button class="feed-tab" data-feed-mode="discover" onclick="setFeedMode('discover')" data-i18n="discover">Keşfet</button>
+            <button class="feed-tab" data-feed-mode="saved" onclick="setFeedMode('saved')" data-i18n="saved">Kaydedilenler</button>
+        </div>
+        <div class="feed-header">
+            <h2 id="feed-title" style="font-size: 1.2rem;" data-i18n="allFeed">Tüm Akış</h2>
+            <div class="feed-controls">
+                <label style="color:var(--text-muted); font-size:0.9rem;" data-i18n="sort">Sırala:</label>
+                <select id="sort-select" class="select-field" onchange="setSort(this.value)">
+                    <option value="new" data-i18n="new">Yeni</option>
+                    <option value="top" data-i18n="top">En Çok Oy</option>
+                    <option value="hot" data-i18n="hot">Gündem</option>
+                </select>
+            </div>
+        </div>
+        <!-- Hero / welcome card -->
+        <div class="hero">
+            <div class="hero-left">
+                <svg class="hero-logo" viewBox="0 0 100 100" aria-label="izanai logosu" role="img">
+                    <path d="M50 15v70M29 25v23l21 13 21-13V25M29 48l-11-8M71 48l11-8M34 72h32"></path>
+                </svg>
+                <div>
+                    <div class="hero-title" data-i18n="welcome">Hoş geldin — İzumi'ye giriş yaptın</div>
+                    <div style="font-size:0.9rem; color:var(--text-muted)" data-i18n="welcomeText">Yeni fikirler keşfet, kendi topluluğunu oluştur ve paylaş.</div>
+                </div>
+            </div>
+            <div class="hero-cta">
+                <button class="btn-primary" onclick="openPostComposer()" data-i18n="shareNow">Hemen Post Paylaş</button>
+            </div>
+        </div>
+        <div id="posts-container" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Postlar JS ile gelecek -->
+        </div>
+    </main>
+
+    <!-- SAĞ MENÜ -->
+    <aside class="sidebar-right">
+        <div class="card">
+            <div class="card-title" data-i18n="anonymousProfile">Anonim Profilin</div>
+            <div class="profile-info">
+                <div class="avatar" id="user-avatar">?</div>
+                <div>
+                    <div id="user-name" style="font-weight:600;">Anonim</div>
+                    <div id="user-bio" style="font-size:0.8rem; color:var(--text-muted);" data-i18n="noBio">Henüz biyografi eklenmedi.</div>
+                    <div id="user-account-age" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;"></div>
+                </div>
+            </div>
+            <div class="profile-stats">
+                <span><span data-i18n="posts">Postlar</span>: <b id="stat-posts">0</b></span>
+                <span><span data-i18n="karma">Karma</span>: <b id="stat-karma">1</b></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title" data-i18n="popularSubs">Popüler Sub'lar</div>
+            <div id="sub-list" style="display:flex; flex-direction:column; gap:8px;">
+                <!-- Sub'lar gelecek -->
+            </div>
+        </div>
+
+        <div class="card">
+                <div class="card-title" data-i18n="izumiStats">izanai İstatistikleri</div>
+            <div class="site-stats">
+                <div class="site-stat"><strong id="site-stat-users">0</strong><span data-i18n="active24h">Son 24s aktif</span></div>
+                <div class="site-stat"><strong id="site-stat-posts">0</strong><span data-i18n="post">Post</span></div>
+                <div class="site-stat"><strong id="site-stat-comments">0</strong><span data-i18n="comment">Yorum</span></div>
+                <div class="site-stat"><strong id="site-stat-subs">0</strong><span data-i18n="sub">Sub</span></div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<!-- POST MODALI -->
+<div class="modal-overlay" id="modal-post">
+    <div class="modal">
+        <div class="modal-header">
+            <span data-i18n="newPost">Yeni Post Gönder</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-post')"></i>
+        </div>
+        <div id="post-sub-current" style="font-size:0.9rem; color:var(--text-muted); display:none; margin-bottom:6px;"></div>
+        <select class="select-field" id="post-sub-select"></select>
+        <input type="text" class="input-field" id="post-title" placeholder="Başlık">
+        <div style="display:flex; gap:8px; align-items:center;">
+            <textarea class="textarea-field" id="post-body" placeholder="İsteğe bağlı: içeriği buraya yazın (opsiyonel)"></textarea>
+        </div>
+        <input type="text" class="input-field" id="post-img" placeholder="Resim URL (İsteğe bağlı)">
+        <input type="text" class="input-field" id="post-tags" placeholder="Etiketler (virgülle ayırın, ör. teknoloji, soru)">
+        <input type="file" id="post-file" accept="image/*,video/*" style="margin-top:8px;">
+        <div id="post-media-preview" style="margin-top:8px;"></div>
+        <input type="hidden" id="post-media-type">
+        <input type="hidden" id="post-media-src">
+        <div style="display:flex; gap:10px;">
+            <label style="font-size:0.8rem; color:var(--text-muted);"><input type="checkbox" id="post-nsfw"> NSFW</label>
+            <label style="font-size:0.8rem; color:var(--text-muted);"><input type="checkbox" id="post-spoiler"> Spoiler</label>
+        </div>
+        <button class="btn-primary" onclick="submitPost()" data-i18n="share">Paylaş</button>
+    </div>
+</div>
+
+<!-- SUB MODALI -->
+<div class="modal-overlay" id="modal-sub">
+    <div class="modal">
+        <div class="modal-header">
+            <span data-i18n="newSub">Yeni Sub Oluştur</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-sub')"></i>
+        </div>
+        <input class="input-field" id="sub-name" placeholder="Sub adı (ör. yazilim)">
+        <textarea class="textarea-field" id="sub-desc" placeholder="Kısa açıklama (isteğe bağlı)"></textarea>
+        <div style="text-align:right;"><button class="btn-primary" onclick="submitSub()" data-i18n="create">Oluştur</button></div>
+    </div>
+</div>
+
+    <!-- SUB ÖZELLİKLERİ MODALI -->
+    <div class="modal-overlay" id="modal-sub-props" style="display:none;">
+        <div class="modal">
+            <div class="modal-header">
+                <span data-i18n="subProperties">Sub Özellikleri</span>
+                <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-sub-props')"></i>
+            </div>
+            <input class="input-field" id="prop-sub-name" placeholder="Sub adı" readonly />
+            <textarea class="textarea-field" id="prop-sub-desc" placeholder="Açıklama"></textarea>
+            <div id="prop-sub-stats" style="font-size:0.9rem; color:var(--text-muted); margin-top:6px;"></div>
+            <div id="prop-owner-controls">
+            <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+                <div style="flex:1">
+                    <label style="font-size:0.85rem; color:var(--text-muted)">Sahip</label>
+                    <input class="input-field" id="prop-sub-owner" readonly />
+                </div>
+                <div style="flex:1">
+                    <label style="font-size:0.85rem; color:var(--text-muted)" data-i18n="deletePermission">Silme İzni</label>
+                    <select class="select-field" id="prop-sub-deleteperm"><option value="owner">Sadece Sahip</option><option value="anyone">Herkes</option></select>
+                </div>
+            </div>
+            <div style="margin-top:8px;">
+                <label style="font-size:0.85rem; color:var(--text-muted)" data-i18n="commentDeletePermission">Yorum Silme İzni</label>
+                <select class="select-field" id="prop-sub-commentperm"><option value="author">Yazar</option><option value="owner">Sahip</option><option value="anyone">Herkes</option></select>
+            </div>
+            <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                <input class="input-field" id="prop-transfer-owner" placeholder="Yeni sahip rumuzu" />
+                <button class="btn-secondary" onclick="transferOwnerFromModal()" data-i18n="transferOwnership">Sahipliği Devret</button>
+            </div>
+            <div style="margin-top:12px; text-align:right; display:flex; gap:8px; justify-content:flex-end;"><button class="btn-secondary" onclick="closeModal('modal-sub-props')">İptal</button><button class="btn-primary" id="prop-save-btn" onclick="saveSubProperties()">Kaydet</button></div>
+            </div>
+        </div>
+    </div>
+
+<!-- PROFİL MODALI -->
+<div class="modal-overlay" id="modal-profile">
+    <div class="modal">
+        <div class="modal-header">
+            <span data-i18n="profileSettings">Profil Ayarları</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-profile')"></i>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <div id="user-avatar" style="width:64px; height:64px; border-radius:10px; background:var(--muted-bg); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.6rem; overflow:hidden"></div>
+            <div style="flex:1">
+                <input class="input-field" id="profile-name-input" placeholder="Rumuz" />
+                <textarea class="textarea-field" id="profile-bio-input" placeholder="Biyografi"></textarea>
+                <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                    <input type="file" id="profile-avatar-input" accept="image/*" onchange="profileAvatarChanged(this)">
+                    <div id="profile-avatar-preview" style="width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center;">
+                        <img id="profile-avatar-img" src="" alt="avatar" style="width:100%; height:100%; object-fit:cover; display:none;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:12px;">
+            <h4 style="margin:0 0 8px 0" data-i18n="subscriptions">Aktif Abonelikler</h4>
+            <div id="user-subs-list" style="display:flex; flex-direction:column; gap:6px"></div>
+        </div>
+        <div style="margin-top:12px;">
+            <h4 style="margin:0 0 8px 0" data-i18n="savedPosts">Kaydedilen Gönderiler</h4>
+            <div id="user-saved-list" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow:auto; padding-right:6px"></div>
+        </div>
+        <div style="margin-top:12px;">
+            <h4 style="margin:0 0 8px 0" data-i18n="ownedSubs">Sahip Olduğum Sub'lar</h4>
+            <div id="owned-subs-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px"></div>
+        </div>
+        <div style="margin-top:12px;">
+            <h4 style="margin:0 0 8px 0" data-i18n="myComments">Yorumlarım</h4>
+            <div id="user-comments-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px"></div>
+        </div>
+        <div style="margin-top:12px;">
+            <h4 style="margin:0 0 8px 0" data-i18n="settings">Ayarlar</h4>
+            <label style="display:flex; align-items:center; gap:8px"><input type="checkbox" id="setting-show-profile" /> Profili herkese göster</label>
+            <label style="display:flex; align-items:center; gap:8px"><input type="checkbox" id="setting-autologin" /> Otomatik giriş (tarayıcıda sakla)</label>
+        </div>
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-color);">
+            <h4 style="margin:0 0 8px 0" data-i18n="portableBackup">Taşınabilir Tam Kayıt</h4>
+            <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">Hesapları, postları, yorumları ve ayarları tek dosyada saklayın.</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-secondary" onclick="exportFullBackup()"><i class="fa-solid fa-download"></i> Tam Kaydı İndir</button>
+                <button class="btn-secondary" onclick="document.getElementById('backup-file-input').click()"><i class="fa-solid fa-upload"></i> Tam Kaydı Yükle</button>
+                <input type="file" id="backup-file-input" accept="application/json,.json" style="display:none" onchange="importFullBackup(this)">
+            </div>
+        </div>
+        <div style="margin-top:12px; text-align:right; display:flex; gap:8px; justify-content:flex-end;"><button class="btn-secondary" onclick="logout()">Hesaptan Çık</button><button class="btn-secondary" onclick="deleteAccount()" style="color:var(--danger); border-color:var(--danger);">Hesabı Kalıcı Sil</button><button class="btn-primary" onclick="saveProfile()">Kaydet</button></div>
+    </div>
+</div>
+
+<!-- AYARLAR MODALI -->
+<div class="modal-overlay" id="modal-settings">
+    <div class="modal">
+        <div class="modal-header"><span data-i18n="settings">Ayarlar</span><i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-settings')"></i></div>
+        <label style="color:var(--text-muted);" for="language-select" data-i18n="language">Dil</label>
+        <select class="select-field" id="language-select" onchange="setLanguage(this.value)">
+            <option value="tr">Türkçe</option>
+            <option value="en">English</option>
+        </select>
+        <div style="font-size:0.82rem; color:var(--text-muted);" data-i18n="languageHint">Türkçe ana dildir. Seçiminiz bu cihazda saklanır.</div>
+    </div>
+</div>
+
+<!-- LOGIN / ACCOUNTS MODAL -->
+<div class="modal-overlay" id="modal-login">
+    <div class="modal">
+        <div class="modal-header">
+            <span data-i18n="loginTitle">Hesaplar / Oturum Aç</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-login')"></i>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <input class="input-field" id="login-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
+            <input class="input-field" id="login-password" type="password" placeholder="Parola" data-placeholder-tr="Parola" data-placeholder-en="Password" style="max-width:180px;" />
+            <button class="btn-secondary" onclick="loginSelected()" data-i18n="login">Oturum Aç</button>
+        </div>
+        <hr style="border-color:var(--border-color)">
+        <div style="font-size:0.9rem; color:var(--text-muted);" data-i18n="createAccountHint">Yeni Hesap Oluştur (Parola zorunludur, en az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermeli)</div>
+        <input class="input-field" id="new-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
+        <input class="input-field" id="new-password" type="password" placeholder="Parola (güçlü olmalı)" data-placeholder-tr="Parola (güçlü olmalı)" data-placeholder-en="Password (must be strong)">
+        <div id="password-strength" style="font-size:0.85rem; color:var(--text-muted); margin-top:6px; display:flex; align-items:center; gap:8px;"></div>
+        <button class="btn-primary" onclick="createAndLogin()">Hesap Oluştur ve Oturum Aç</button>
+        <div style="margin-top:8px;">
+            <button class="btn-secondary" onclick="logout()">Çıkış Yap</button>
+        </div>
+    </div>
+</div>
+
+<!-- YORUM MODALI -->
+<div class="modal-overlay" id="modal-comments">
+    <div class="modal" style="max-width: 650px; max-height: 85vh; overflow-y: auto;">
+        <div class="modal-header">
+            <span data-i18n="postDetails">Gönderi Detayı & Yorumlar</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-comments')"></i>
+        </div>
+        <div id="comment-post-detail"></div>
+        <div class="comments-section">
+            <h4 style="font-size: 0.9rem; color: var(--text-muted);" data-i18n="addComment">Yorum Yap</h4>
+            <textarea class="textarea-field" id="new-comment-body" placeholder="Anonim bir yorum bırak..."></textarea>
+            <input type="file" id="comment-file" accept="image/*,video/*" style="margin-top:8px;">
+            <div id="comment-media-preview"></div>
+            <input type="hidden" id="comment-media-type">
+            <input type="hidden" id="comment-media-src">
+
+            <button class="btn-primary" onclick="submitComment()">Yorum Gönder</button>
+            <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-top: 10px;" data-i18n="comments">Yorumlar</h4>
+            <div id="comments-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- RAPOR MODALI -->
+<div class="modal-overlay" id="modal-report">
+    <div class="modal">
+        <div class="modal-header">
+            <span data-i18n="reportPost">Post Rapor Et</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-report')"></i>
+        </div>
+        <div id="report-post-detail" style="padding:8px; background:var(--bg-secondary); border-radius:6px; margin-bottom:12px;"></div>
+        <textarea class="textarea-field" id="report-reason" placeholder="Rapor sebebini açıkla..."></textarea>
+        <select class="select-field" id="report-type">
+            <option value="spam">Spam</option>
+            <option value="inappropriate">Uygunsuz İçerik</option>
+            <option value="harassment">Taciz/Bully</option>
+            <option value="other">Diğer</option>
+        </select>
+        <div style="margin-top:12px; text-align:right; display:flex; gap:8px; justify-content:flex-end;">
+            <button class="btn-secondary" onclick="closeModal('modal-report')">İptal</button>
+            <button class="btn-primary" onclick="submitReport()">Rapor Gönder</button>
+        </div>
+    </div>
+</div>
+
+<!-- KULLANICI PROFİLİ MODALI (Başka Kullanıcılar) -->
+<div class="modal-overlay" id="modal-user-profile">
+    <div class="modal">
+        <div class="modal-header">
+            <span id="user-profile-title" data-i18n="userProfile">Kullanıcı Profili</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-user-profile')"></i>
+        </div>
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+            <div id="user-profile-avatar" style="width:64px; height:64px; border-radius:10px; background:var(--muted-bg); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.6rem; overflow:hidden; flex-shrink:0;"></div>
+            <div style="flex:1;">
+                <div style="font-weight:600; margin-bottom:4px;" id="user-profile-name"></div>
+                <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:8px;" id="user-profile-bio"></div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;" id="user-profile-account-age"></div>
+                <div style="display:flex; gap:12px; font-size:0.85rem; color:var(--text-muted);">
+                    <span><span data-i18n="karma">Karma</span>: <b id="user-profile-karma">0</b></span>
+                    <span><span data-i18n="posts">Postlar</span>: <b id="user-profile-posts">0</b></span>
+                </div>
+                <div class="profile-counts"><span><span data-i18n="followers">Takipçi</span>: <b id="user-profile-followers">0</b></span><span><span data-i18n="followingCount">Takip</span>: <b id="user-profile-following">0</b></span></div>
+                <button class="btn-secondary" id="user-profile-follow-btn" style="margin-top:8px;">Takip Et</button>
+            </div>
+        </div>
+        <div style="margin-top:12px;">
+            <h4 style="margin:0 0 8px 0; font-size:0.9rem;">Son Gönderiler</h4>
+            <div id="user-profile-posts-list" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- BİLDİRİM MODALI -->
+<div class="modal-overlay" id="modal-notifications">
+    <div class="modal">
+        <div class="modal-header"><span>Bildirimler</span><i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-notifications')"></i></div>
+        <div id="notifications-list" style="display:flex; flex-direction:column; gap:8px; max-height:55vh; overflow:auto;"></div>
+        <button class="btn-secondary" onclick="markNotificationsRead()">Tümünü okundu işaretle</button>
+    </div>
+</div>
+
+<script>
+    let activePostIdForComments = null;
+
+    let state = {
+        user: JSON.parse(localStorage.getItem('iz_user')) || { name: 'Anon' + Math.floor(Math.random()*1000), bio: 'Özgür anonim kullanıcı.', karma: 1, votes: {}, following: [], subscriptions: [], settings: {} },
+        subs: JSON.parse(localStorage.getItem('iz_subs')) || [
+            { name: 'genel', desc: 'Genel tartışma ve özgür fikirler.' },
+            { name: 'yazilim', desc: 'Kodlama, yazılım ve teknoloji.' }
+        ],
+        posts: JSON.parse(localStorage.getItem('iz_posts')) || [],
+        saved: JSON.parse(localStorage.getItem('iz_saved')) || [],
+        reports: JSON.parse(localStorage.getItem('iz_reports')) || [],
+        activeSubs: JSON.parse(localStorage.getItem('iz_active_subs')) || [],
+        users: JSON.parse(localStorage.getItem('iz_users')) || [],
+        notifications: JSON.parse(localStorage.getItem('iz_notifications')) || [],
+        language: localStorage.getItem('iz_language') || 'tr',
+        feedLimit: 8,
+        sortMode: 'new',
+        feedMode: 'all'
+    };
+
+    function saveState() {
+        localStorage.setItem('iz_user', JSON.stringify(state.user));
+        localStorage.setItem('iz_subs', JSON.stringify(state.subs));
+        localStorage.setItem('iz_posts', JSON.stringify(state.posts));
+        localStorage.setItem('iz_saved', JSON.stringify(state.saved));
+        localStorage.setItem('iz_reports', JSON.stringify(state.reports || []));
+        localStorage.setItem('iz_active_subs', JSON.stringify(state.activeSubs || []));
+        localStorage.setItem('iz_users', JSON.stringify(state.users));
+        localStorage.setItem('iz_notifications', JSON.stringify(state.notifications || []));
+        localStorage.setItem('iz_language', state.language || 'tr');
+        // attempt to sync to server if available
+        try{ syncStateToServer(); }catch(e){ /* ignore */ }
+    }
+
+    const translations = {
+        tr: {
+            home: 'Ana Akış', notifications: 'Bildirimler', loginAccounts: 'Oturum Aç / Hesaplar', createSub: 'Sub Oluştur', profileSettings: 'Profil Ayarları', settings: 'Ayarlar', sharePost: 'Post Paylaş', activeSubs: "Aktif Sub'lar", session: 'Oturum', all: 'Tümü', following: 'Takip Ettiklerim', discover: 'Keşfet', saved: 'Kaydedilenler', allFeed: 'Tüm Akış', sort: 'Sırala:', new: 'Yeni', top: 'En Çok Oy', hot: 'Gündem', welcome: "Hoş geldin — İzumi'ye giriş yaptın", welcomeText: 'Yeni fikirler keşfet, kendi topluluğunu oluştur ve paylaş.', shareNow: 'Hemen Post Paylaş', language: 'Dil', languageHint: 'Türkçe ana dildir. Seçiminiz bu cihazda saklanır.', anonymousProfile: 'Anonim Profilin', noBio: 'Henüz biyografi eklenmedi.', posts: 'Postlar', karma: 'Karma', popularSubs: "Popüler Sub'lar", izumiStats: 'izanai İstatistikleri', active24h: 'Son 24s aktif', post: 'Post', comment: 'Yorum', sub: 'Sub', newPost: 'Yeni Post Gönder', share: 'Paylaş', newSub: 'Yeni Sub Oluştur', create: 'Oluştur', subProperties: 'Sub Özellikleri', deletePermission: 'Silme İzni', commentDeletePermission: 'Yorum Silme İzni', transferOwnership: 'Sahipliği Devret', subscriptions: 'Aktif Abonelikler', savedPosts: 'Kaydedilen Gönderiler', ownedSubs: "Sahip Olduğum Sub'lar", myComments: 'Yorumlarım', portableBackup: 'Taşınabilir Tam Kayıt', subscribe: 'Abone Ol', leave: 'Çık', views: 'Görüntülenme', comments: 'Yorumlar', savedLabel: 'Kaydedildi', save: 'Kaydet', report: 'Rapor Et', delete: 'Sil', edit: 'Düzenle', createAccountHint: 'Yeni Hesap Oluştur (parola 8+ karakter, büyük/küçük harf, rakam ve özel karakter içermeli)', loginTitle: 'Hesaplar / Oturum Aç', login: 'Oturum Aç', postDetails: 'Gönderi Detayı & Yorumlar', addComment: 'Yorum Yap', reportPost: 'Post Rapor Et', userProfile: 'Kullanıcı Profili', followers: 'Takipçi', followingCount: 'Takip', nsfwContent: 'NSFW içerik', clickToReveal: 'Görüntülemek için tıklayın', accountAge: 'Hesap yaşı', accountAgeUnknown: 'Hesap yaşı bilinmiyor', days: 'gün', weeks: 'hafta', months: 'ay', years: 'yıl'
+        },
+        en: {
+            home: 'Home Feed', notifications: 'Notifications', loginAccounts: 'Log In / Accounts', createSub: 'Create Sub', profileSettings: 'Profile Settings', settings: 'Settings', sharePost: 'Share Post', activeSubs: 'Active Subs', session: 'Session', all: 'All', following: 'Following', discover: 'Discover', saved: 'Saved', allFeed: 'All Feed', sort: 'Sort:', new: 'New', top: 'Top Voted', hot: 'Trending', welcome: 'Welcome — you entered Izumi', welcomeText: 'Discover ideas, create your community and share.', shareNow: 'Share a Post', language: 'Language', languageHint: 'Turkish is the default language. Your choice is saved on this device.', anonymousProfile: 'Anonymous Profile', noBio: 'No bio added yet.', posts: 'Posts', karma: 'Karma', popularSubs: 'Popular Subs', izumiStats: 'izanai Statistics', active24h: 'Active in 24h', post: 'Post', comment: 'Comment', sub: 'Sub', newPost: 'New Post', share: 'Share', newSub: 'Create New Sub', create: 'Create', subProperties: 'Sub Properties', deletePermission: 'Delete Permission', commentDeletePermission: 'Comment Delete Permission', transferOwnership: 'Transfer Ownership', subscriptions: 'Active Subscriptions', savedPosts: 'Saved Posts', ownedSubs: 'My Subs', myComments: 'My Comments', portableBackup: 'Portable Full Backup', subscribe: 'Subscribe', leave: 'Leave', views: 'Views', comments: 'Comments', savedLabel: 'Saved', save: 'Save', report: 'Report', delete: 'Delete', edit: 'Edit', createAccountHint: 'Create New Account (password must be 8+ characters with upper/lowercase, a number and a special character)', loginTitle: 'Accounts / Log In', login: 'Log In', postDetails: 'Post Details & Comments', addComment: 'Add a Comment', reportPost: 'Report Post', userProfile: 'User Profile', followers: 'Followers', followingCount: 'Following', nsfwContent: 'NSFW content', clickToReveal: 'Click to reveal', accountAge: 'Account age', accountAgeUnknown: 'Account age unknown', days: 'days', weeks: 'weeks', months: 'months', years: 'years'
+        },
+        staticTr: {
+            'Hesaplar / Oturum Aç': 'Accounts / Log In',
+            'Oturum Aç': 'Log In',
+            'Yeni Hesap Oluştur': 'Create New Account',
+            'Parola zorunludur, en az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermeli': 'Password required: 8+ characters with upper/lowercase, a number and a special character',
+            'Parola (güçlü olmalı)': 'Password (must be strong)',
+            'Parola gücü gösteriliyor': 'Password strength is shown here',
+            'Hesap Oluştur ve Oturum Aç': 'Create Account and Log In',
+            'Çıkış Yap': 'Log Out',
+            'Gönderi Detayı & Yorumlar': 'Post Details & Comments',
+            'Anonim bir yorum bırak...': 'Leave an anonymous comment...',
+            'Yorum Yap': 'Add a Comment',
+            'Yorum Gönder': 'Post Comment',
+            'Yorumlar': 'Comments',
+            'Post Rapor Et': 'Report Post',
+            'Rapor sebebini açıkla...': 'Explain the reason for the report...',
+            'Uygunsuz İçerik': 'Inappropriate Content',
+            'Taciz/Bully': 'Harassment/Bullying',
+            'Diğer': 'Other',
+            'İptal': 'Cancel',
+            'Rapor Gönder': 'Submit Report',
+            'Kullanıcı Profili': 'User Profile',
+            'Takip Et': 'Follow',
+            'Takipi Bırak': 'Unfollow',
+            'Son Gönderiler': 'Recent Posts',
+            'Tümünü okundu işaretle': 'Mark All as Read',
+            'Henüz bildiriminiz yok.': 'You have no notifications yet.',
+            'Başlık': 'Title',
+            'İsteğe bağlı: içeriği buraya yazın (opsiyonel)': 'Optional: write your content here',
+            'Resim URL (İsteğe bağlı)': 'Image URL (optional)',
+            'Etiketler (virgülle ayırın, ör. teknoloji, soru)': 'Tags (comma separated, e.g. technology, question)',
+            'NSFW': 'NSFW',
+            'Spoiler': 'Spoiler',
+            'Sub adı (ör. yazilim)': 'Sub name (e.g. software)',
+            'Kısa açıklama (isteğe bağlı)': 'Short description (optional)',
+            'Açıklama': 'Description',
+            'Sahip': 'Owner',
+            'Sadece Sahip': 'Owner Only',
+            'Herkes': 'Everyone',
+            'Yazar': 'Author',
+            'Yalnızca Yazar': 'Author Only',
+            'Sadece Sub Sahibi': 'Sub Owner Only',
+            'Sahipliği Devret': 'Transfer Ownership',
+            'Profil Ayarları': 'Profile Settings',
+            'Profili herkese göster': 'Show profile publicly',
+            'Otomatik giriş (tarayıcıda sakla)': 'Automatic login (save in browser)',
+            'Tam Kaydı İndir': 'Download Full Backup',
+            'Tam Kaydı Yükle': 'Upload Full Backup',
+            'Hesaptan Çık': 'Log Out',
+            'Hesabı Kalıcı Sil': 'Delete Account Permanently',
+            'Kaydet': 'Save',
+            'Yeni Post Gönder': 'New Post',
+            'Yeni Sub Oluştur': 'Create New Sub',
+            'Sub Özellikleri': 'Sub Properties',
+            'Sahipliği Devret': 'Transfer Ownership',
+            'Gönderi bulunamadı.': 'No posts found.',
+            'Henüz yorum yapılmamış.': 'No comments yet.',
+            'Daha Fazla Yükle': 'Load More',
+            'Post Oluştur': 'Create Post',
+            'Sağ üstten paylaşabilirsiniz.': 'You can share a post from the top.',
+            'Henüz gösterilecek gönderi yok': 'There are no posts to show yet',
+            'Görüntülemek için tıklayın': 'Click to reveal',
+            'NSFW içerik': 'NSFW content',
+            'Aç': 'Open',
+            'Kaldır': 'Remove',
+            'Düzenle': 'Edit',
+            'Sil': 'Delete',
+            'Abone Ol': 'Subscribe',
+            'Çık': 'Leave',
+            'Bu Subda Paylaş': 'Post in This Sub',
+            'Henüz aktif sub yok': 'No active subs yet',
+            'Henüz kaydedilmiş gönderiniz yok': 'You have no saved posts yet',
+            'Henüz yorumunuz yok.': 'You have no comments yet',
+            'Biyografi yok': 'No bio',
+            'Kullanıcı bulunamadı': 'User not found',
+            'Arama:': 'Search:',
+            'Kullanıcı veya sub bulunamadı.': 'No user or sub found.', 'nsfwContent': 'NSFW content', 'clickToReveal': 'Click to reveal',
+            'views': 'Views', 'comments': 'Comments', 'savedLabel': 'Saved', 'save': 'Save', 'report': 'Report', 'delete': 'Delete', 'edit': 'Edit',
+            'createAccountHint': 'Create New Account (password must be 8+ characters with upper/lowercase, a number and a special character)', 'loginTitle': 'Accounts / Log In', 'login': 'Log In', 'postDetails': 'Post Details & Comments', 'addComment': 'Add a Comment', 'reportPost': 'Report Post', 'userProfile': 'User Profile', 'followers': 'Followers', 'followingCount': 'Following'
+        }
+    };
+
+    let translatingStaticText = false;
+    function translateStaticText(){
+        if(translatingStaticText) return;
+        translatingStaticText = true;
+        const dictionary = state.language === 'en' ? translations.staticTr : Object.fromEntries(Object.entries(translations.staticTr).map(([tr, en]) => [en, tr]));
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        const nodes = [];
+        while(walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(node => {
+            const value = node.nodeValue.trim();
+            if(dictionary[value]) node.nodeValue = node.nodeValue.replace(value, dictionary[value]);
+        });
+        document.querySelectorAll('[placeholder]').forEach(element => {
+            const value = element.getAttribute('placeholder');
+            if(dictionary[value]) element.setAttribute('placeholder', dictionary[value]);
+        });
+        translatingStaticText = false;
+    }
+
+    const languageObserver = new MutationObserver(() => {
+        if(state.language === 'en' || state.language === 'tr') translateStaticText();
+    });
+    languageObserver.observe(document.body, { childList: true, subtree: true });
+
+    function setLanguage(language){
+        state.language = language === 'en' ? 'en' : 'tr';
+        document.documentElement.lang = state.language;
+        const dictionary = translations[state.language];
+        document.querySelectorAll('[data-i18n]').forEach(element => {
+            const key = element.dataset.i18n;
+            if(dictionary[key]) element.textContent = dictionary[key];
+        });
+        const search = document.getElementById('search-input');
+        if(search) search.placeholder = search.dataset[`placeholder${state.language === 'en' ? 'En' : 'Tr'}`];
+        const languageSelect = document.getElementById('language-select');
+        if(languageSelect) languageSelect.value = state.language;
+        translateStaticText();
+        if(document.getElementById('posts-container')) renderPosts();
+        if(document.getElementById('sub-list')) renderSubs();
+        if(document.getElementById('user-name')) renderProfile();
+        saveState();
+    }
+
+    function t(key){
+        return (translations[state.language || 'tr'] || translations.tr)[key] || key;
+    }
+
+    function escapeHtml(value){
+        return String(value ?? '').replace(/[&<>'"]/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        }[character]));
+    }
+
+    function safeMediaUrl(value){
+        const source = String(value || '');
+        return /^(data:image\/|data:video\/|https?:\/\/)/i.test(source) ? escapeHtml(source) : '';
+    }
+
+    function addNotification(username, type, message, postId = null){
+        if(!username || username === state.user.name) return;
+        if(!state.notifications) state.notifications = [];
+        state.notifications.unshift({ id: Date.now() + Math.random(), username, type, message, postId, read: false, createdAt: Date.now() });
+        state.notifications = state.notifications.slice(0, 200);
+        saveState();
+        renderNotificationBadge();
+    }
+
+    function renderNotificationBadge(){
+        const unread = (state.notifications || []).filter(item => item.username === state.user.name && !item.read).length;
+        const badge = document.getElementById('notification-count');
+        if(!badge) return;
+        badge.innerText = unread;
+        badge.style.display = unread ? 'inline-flex' : 'none';
+    }
+
+    function openNotifications(){
+        const list = document.getElementById('notifications-list');
+        const items = (state.notifications || []).filter(item => item.username === state.user.name);
+        list.innerHTML = items.length ? items.map(item => `<div class="comment-card" style="opacity:${item.read ? 0.65 : 1}">${escapeHtml(item.message)}<div class="comment-meta">${escapeHtml(new Date(item.createdAt).toLocaleString('tr-TR'))}</div></div>`).join('') : '<div style="color:var(--text-muted)">Henüz bildiriminiz yok.</div>';
+        openModal('modal-notifications');
+    }
+
+    function markNotificationsRead(){
+        (state.notifications || []).forEach(item => { if(item.username === state.user.name) item.read = true; });
+        saveState();
+        renderNotificationBadge();
+        openNotifications();
+    }
+
+    async function syncStateToServer(){
+        try{
+            const res = await fetch('/api/state', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ state })
+            });
+            if(!res.ok) {
+                console.warn(`Server sync failed: ${res.status} ${res.statusText}`);
+                return;
+            }
+            console.log('State synced to server');
+        }catch(e){ 
+            console.warn('Server sync failed (local data persisted):', e.message); 
+        }
+    }
+
+    async function loadStateFromServer(){
+        try{
+            const res = await fetch('/api/state');
+            if(!res.ok) {
+                console.warn(`Server load failed: ${res.status} ${res.statusText}`);
+                return;
+            }
+            const data = await res.json();
+            if(!data || !data.state) {
+                console.warn('Server returned empty state, using local data');
+                return;
+            }
+            const s = data.state;
+            const localUser = state.user;
+            if(Array.isArray(s.subs)) state.subs = mergeRecords(state.subs, s.subs, 'name');
+            if(Array.isArray(s.posts)) state.posts = mergeRecords(state.posts, s.posts, 'id');
+            if(Array.isArray(s.users)) state.users = mergeRecords(state.users, s.users, 'id');
+            if(Array.isArray(s.saved)) state.saved = Array.from(new Set([...(state.saved || []), ...s.saved]));
+            if(Array.isArray(s.activeSubs)) state.activeSubs = Array.from(new Set([...(state.activeSubs || []), ...s.activeSubs]));
+            if(Array.isArray(s.reports)) state.reports = mergeRecords(state.reports, s.reports, 'date');
+            if(Array.isArray(s.notifications)) state.notifications = mergeRecords(state.notifications, s.notifications, 'id');
+            state.user = localUser;
+            console.log('State loaded from server');
+            // also persist locally
+            saveState();
+        }catch(e){ 
+            console.warn('loadStateFromServer failed (using local data):', e.message); 
+        }
+    }
+
+    function mergeRecords(existing, incoming, key){
+        const merged = Array.isArray(existing) ? existing.slice() : [];
+        const indexes = new Map(merged.map((item, index) => [item && item[key], index]));
+        (Array.isArray(incoming) ? incoming : []).forEach(item => {
+            if(!item || item[key] === undefined || item[key] === null) return;
+            const index = indexes.get(item[key]);
+            if(index === undefined){
+                indexes.set(item[key], merged.length);
+                merged.push(item);
+            } else {
+                merged[index] = { ...merged[index], ...item };
+            }
+        });
+        return merged;
+    }
+
+    async function refreshStateFromServer(){
+        try{
+            const res = await fetch('/api/state', { cache: 'no-store' });
+            if(!res.ok) return;
+            const data = await res.json();
+            if(!data || !data.state) return;
+            const incoming = data.state;
+            const changed = JSON.stringify(incoming.posts || []) !== JSON.stringify(state.posts || []) || JSON.stringify(incoming.subs || []) !== JSON.stringify(state.subs || []) || JSON.stringify(incoming.notifications || []) !== JSON.stringify(state.notifications || []);
+            if(!changed) return;
+            if(Array.isArray(incoming.posts)) state.posts = mergeRecords(state.posts, incoming.posts, 'id');
+            if(Array.isArray(incoming.subs)) state.subs = mergeRecords(state.subs, incoming.subs, 'name');
+            if(Array.isArray(incoming.users)) state.users = mergeRecords(state.users, incoming.users, 'id');
+            if(Array.isArray(incoming.notifications)) state.notifications = mergeRecords(state.notifications, incoming.notifications, 'id');
+            renderSubs();
+            renderPosts();
+            renderProfile();
+        }catch(e){
+            // The app remains usable with localStorage when no API is running.
+        }
+    }
+
+    window.addEventListener('storage', event => {
+        if(!event.key || !event.key.startsWith('iz_')) return;
+        if(event.key === 'iz_posts') state.posts = JSON.parse(event.newValue || '[]');
+        if(event.key === 'iz_subs') state.subs = JSON.parse(event.newValue || '[]');
+        if(event.key === 'iz_saved') state.saved = JSON.parse(event.newValue || '[]');
+        renderSubs();
+        renderPosts();
+        renderProfile();
+    });
+
+    function populateAccountsSelect(){
+        // account-select removed by UI change; keep function for compatibility
+        const sel = document.getElementById('account-select');
+        if(!sel) return;
+        sel.innerHTML = '';
+        state.users.forEach((u, idx)=>{
+            const opt = document.createElement('option'); opt.value = idx; opt.text = u.name; sel.appendChild(opt);
+        });
+    }
+
+    function normalizeUsername(name){
+        return String(name || '').trim().toLocaleLowerCase('tr-TR');
+    }
+
+    function getAccountAgeText(user){
+        const createdAt = Number(user && (user.createdAt || user.id));
+        if(!Number.isFinite(createdAt) || createdAt <= 0) return t('accountAgeUnknown');
+        const totalDays = Math.max(0, Math.floor((Date.now() - createdAt) / 86400000));
+        const weeks = Math.floor(totalDays / 7);
+        const months = Math.floor(totalDays / 30.4375);
+        const years = Math.floor(totalDays / 365.2425);
+        return `${t('accountAge')}: ${totalDays} ${t('days')} • ${weeks} ${t('weeks')} • ${months} ${t('months')} • ${years} ${t('years')}`;
+    }
+
+    function createAndLogin(){
+        (async ()=>{
+            const name = document.getElementById('new-username').value.trim();
+            const pass = document.getElementById('new-password').value || '';
+            if(!name) return alert('Rumuz gerekli');
+            const nameTaken = (state.users || []).some(user => normalizeUsername(user.name) === normalizeUsername(name));
+            if(nameTaken) return alert('Bu rumuz zaten kullanılıyor. Lütfen başka bir rumuz seçin.');
+            const strong = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/;
+            if(!strong.test(pass)) return alert('Parola çok zayıf. En az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermeli.');
+            const hashed = await hashPassword(pass);
+            const user = { id: Date.now(), createdAt: Date.now(), name, pass: hashed, bio: '', karma: 1, votes: {}, subscriptions: [], settings: {} };
+            state.users.push(user);
+            state.user = user;
+            saveState();
+            renderProfile();
+            populateAccountsSelect();
+            closeModal('modal-login');
+            document.getElementById('current-user').innerText = state.user.name;
+        })();
+    }
+
+    function loginSelected(){
+        (async ()=>{
+            const name = document.getElementById('login-username').value.trim();
+            if(!name) return alert('Rumuz girin');
+            const user = (state.users || []).find(u => normalizeUsername(u.name) === normalizeUsername(name));
+            if(!user) return alert('Hesap bulunamadı');
+            const entered = document.getElementById('login-password').value || '';
+            if(!entered) return alert('Parola girin');
+            // determine if stored pass is hashed (hex SHA-256)
+            const isHashed = typeof user.pass === 'string' && /^[0-9a-f]{64}$/.test(user.pass);
+            if(isHashed){
+                const h = await hashPassword(entered);
+                if(h !== user.pass) return alert('Parola yanlış');
+            } else {
+                // legacy plaintext: compare and upgrade to hashed
+                if(entered !== user.pass) return alert('Parola yanlış');
+                const newHash = await hashPassword(entered);
+                user.pass = newHash;
+            }
+            state.user = user;
+            // if user opted for autoLogin earlier, persist current user id
+            saveState();
+            renderProfile();
+            closeModal('modal-login');
+            document.getElementById('current-user').innerText = state.user.name;
+        })();
+    }
+
+    function logout(){
+        state.user = { name: 'Anon' + Math.floor(Math.random()*1000), bio: 'Özgür anonim kullanıcı.', karma: 1, votes: {}, subscriptions: [], settings: {} };
+        saveState();
+        renderProfile();
+        populateAccountsSelect();
+        closeModal('modal-login');
+        document.getElementById('current-user').innerText = state.user.name;
+        const cu = document.getElementById('current-user-avatar'); if(cu) cu.innerText = state.user.name.charAt(0).toUpperCase();
+    }
+
+    async function deleteAccount(){
+        const account = state.user || {};
+        if(!account.id || !account.pass) return alert('Kalıcı silme için parola ile oluşturulmuş bir hesaba giriş yapmalısınız.');
+        if(!confirm('Hesabınız, postlarınız, yorumlarınız ve sahip olduğunuz sublar kalıcı olarak silinecek. Devam edilsin mi?')) return;
+        try{
+            const response = await fetch('/api/account/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: account.id, username: account.name, passwordHash: account.pass })
+            });
+            if(!response.ok) throw new Error('Sunucu hesabı silemedi.');
+        }catch(error){
+            return alert(`${error.message} İnternet bağlantısını kontrol edin.`);
+        }
+        ['iz_user', 'iz_posts', 'iz_subs', 'iz_saved', 'iz_reports', 'iz_active_subs', 'iz_users'].forEach(key => localStorage.removeItem(key));
+        state.user = { name: 'Anon' + Math.floor(Math.random() * 1000), bio: 'Özgür anonim kullanıcı.', karma: 1, votes: {}, subscriptions: [], settings: {} };
+        state.posts = state.posts.filter(post => post.authorId !== account.id && post.author !== account.name);
+        state.subs = state.subs.filter(sub => sub.owner !== account.name);
+        state.users = state.users.filter(user => user.id !== account.id);
+        closeModal('modal-profile');
+        renderSubs();
+        renderProfile();
+        renderPosts();
+        alert('Hesabınız kalıcı olarak silindi.');
+    }
+
+    async function hashPassword(pass){
+        const enc = new TextEncoder();
+        const data = enc.encode(pass);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        const arr = Array.from(new Uint8Array(hash));
+        return arr.map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    function evaluatePasswordStrength(p){
+        if(!p) return {score:0,label:'',color:'#888'};
+        let score = 0;
+        if(p.length >= 8) score += 1;
+        if(/[A-Z]/.test(p) && /[a-z]/.test(p)) score += 1;
+        if(/\d/.test(p)) score += 1;
+        if(/[^A-Za-z0-9]/.test(p)) score += 1;
+        const labels = ['Zayıf','Orta','İyi','Güçlü'];
+        const colors = ['#e53935','#fb8c00','#43a047','#1e88e5'];
+        const idx = Math.max(0, Math.min(labels.length-1, score-1));
+        return { score, label: score<=0? '': labels[idx], color: colors[Math.max(0, idx)] };
+    }
+
+    function bindPasswordMeter(){
+        const pw = document.getElementById('new-password');
+        const meter = document.getElementById('password-strength');
+        if(!pw || !meter) return;
+        const update = ()=>{
+            const val = pw.value || '';
+            const info = evaluatePasswordStrength(val);
+            if(!info.label){ meter.innerHTML = '<span style="color:var(--text-muted)">Parola gücü gösteriliyor</span>'; return; }
+            meter.innerHTML = `<div style="width:80px; height:8px; background:#eee; border-radius:4px; overflow:hidden"><div style="width:${(info.score/4)*100}%; height:100%; background:${info.color}"></div></div><div style="font-size:0.85rem; color:${info.color}; font-weight:600">${info.label}</div>`;
+        };
+        pw.addEventListener('input', update);
+        update();
+    }
+
+    let activeSubContext = null; // when a sub is active (user clicked into a sub), use it for post creation
+
+    function openModal(id) { 
+        if(id === 'modal-post') preparePostModal();
+        document.getElementById(id).style.display = 'flex'; 
+    }
+
+    function isRegisteredUser(){
+        return !!(state.user && state.user.id && (state.users || []).some(user => user.id === state.user.id));
+    }
+
+    function openPostComposer(){
+        if(!isRegisteredUser()){
+            alert('Post paylaşmak için önce hesap oluşturmalısınız veya oturum açmalısınız.');
+            openModal('modal-login');
+            return;
+        }
+        openModal('modal-post');
+    }
+
+    function preparePostModal(){
+        const select = document.getElementById('post-sub-select');
+        const cur = document.getElementById('post-sub-current');
+        // ensure options
+        if(select && select.options.length === 0){
+            (state.subs || []).forEach(s => { const o = document.createElement('option'); o.value = s.name; o.text = 'i/' + s.name; select.appendChild(o); });
+        }
+        if(activeSubContext){
+            if(select) select.value = activeSubContext;
+            if(select) select.style.display = 'none';
+            if(cur){ cur.innerText = 'Gönderi şu suba gönderilecek: i/' + activeSubContext; cur.style.display = 'block'; }
+        } else {
+            if(select) select.style.display = 'block';
+            if(cur){ cur.innerText = ''; cur.style.display = 'none'; }
+        }
+    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function renderProfile() {
+        document.getElementById('user-name').innerText = state.user.name;
+        document.getElementById('user-bio').innerText = state.user.bio || t('noBio');
+        document.getElementById('user-account-age').innerText = getAccountAgeText(state.user);
+        const avatarEl = document.getElementById('user-avatar');
+        if(state.user.avatar){ avatarEl.innerHTML = `<img src="${state.user.avatar}" style="width:100%; height:100%; object-fit:cover"/>`; }
+        else avatarEl.innerText = state.user.name.charAt(0).toUpperCase();
+        document.getElementById('stat-karma').innerText = state.user.karma;
+        document.getElementById('current-user').innerText = state.user.name;
+        const cu = document.getElementById('current-user-avatar');
+        if(cu){ if(state.user.avatar) cu.innerHTML = `<img src="${state.user.avatar}" style="width:100%; height:100%; object-fit:cover; border-radius:6px"/>`; else cu.innerText = state.user.name.charAt(0).toUpperCase(); }
+        const myPosts = state.posts.filter(p => p.author === state.user.name).length;
+        document.getElementById('stat-posts').innerText = myPosts;
+        renderSiteStats();
+        renderNotificationBadge();
+        // render active subscriptions
+        const subList = document.getElementById('user-subs-list');
+        if(subList){ subList.innerHTML = '';
+            (state.user.subscriptions || []).forEach(s => { const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.innerHTML = `<div>i/${s}</div><button class='btn-secondary' onclick="toggleSubscribe('${s}')">Çık</button>`; subList.appendChild(div); });
+            if((state.user.subscriptions||[]).length === 0) subList.innerHTML = '<div style="color:var(--text-muted)">Henüz abone olduğunuz bir topluluk yok</div>';
+        }
+        // render owned subs management (transfer owner, set delete permission)
+        const ownedDiv = document.getElementById('owned-subs-list');
+        if(ownedDiv){ ownedDiv.innerHTML = ''; const owned = state.subs.filter(s=> s.owner === state.user.name);
+            if(owned.length === 0) ownedDiv.innerHTML = '<div style="color:var(--text-muted)">Hiç sub sahibi değilsiniz</div>';
+            owned.forEach(s=>{
+                const row = document.createElement('div'); row.style.display='flex'; row.style.flexDirection='column'; row.style.gap='6px'; row.style.padding='6px'; row.style.borderBottom='1px solid var(--border-color)';
+                const top = document.createElement('div'); top.style.display='flex'; top.style.justifyContent='space-between'; top.innerHTML = `<div style="font-weight:600">i/${s.name}</div><div style="font-size:0.85rem; color:var(--text-muted)">İzin: ${s.deletePermission || 'owner'}</div>`;
+                const controls = document.createElement('div'); controls.style.display='flex'; controls.style.gap='8px';
+                // transfer owner select
+                const select = document.createElement('select'); select.className='select-field';
+                const defaultOpt = document.createElement('option'); defaultOpt.value=''; defaultOpt.text='Sahip değiştir'; select.appendChild(defaultOpt);
+                (state.users || []).forEach(u=>{ const o = document.createElement('option'); o.value = u.name; o.text = u.name; select.appendChild(o); });
+                const transferBtn = document.createElement('button'); transferBtn.className='btn-secondary'; transferBtn.textContent='Transfer'; transferBtn.onclick = ()=>{ const newOwner = select.value; if(!newOwner) return alert('Yeni sahip seçin'); transferOwnership(s.name, newOwner); };
+                const permSelect = document.createElement('select'); permSelect.className='select-field'; permSelect.innerHTML = `<option value="owner" ${ (s.deletePermission==='owner') ? 'selected' : '' }>Sadece Sahip</option><option value="anyone" ${(s.deletePermission==='anyone') ? 'selected' : ''}>Herkes</option>`;
+                const permBtn = document.createElement('button'); permBtn.className='btn-secondary'; permBtn.textContent='Kaydet'; permBtn.onclick = ()=>{ setSubDeletePermission(s.name, permSelect.value); };
+                // comment delete permission select
+                const cpermSelect = document.createElement('select'); cpermSelect.className='select-field'; cpermSelect.innerHTML = `<option value="author" ${ (s.commentDeletePermission==='author') ? 'selected' : '' }>Yalnızca Yazar</option><option value="owner" ${(s.commentDeletePermission==='owner') ? 'selected' : ''}>Sadece Sub Sahibi</option><option value="anyone" ${(s.commentDeletePermission==='anyone') ? 'selected' : ''}>Herkes</option>`;
+                const cpermBtn = document.createElement('button'); cpermBtn.className='btn-secondary'; cpermBtn.textContent='Yorum İzni Kaydet'; cpermBtn.onclick = ()=>{ setSubCommentDeletePermission(s.name, cpermSelect.value); };
+                controls.appendChild(select); controls.appendChild(transferBtn); controls.appendChild(permSelect); controls.appendChild(permBtn); controls.appendChild(cpermSelect); controls.appendChild(cpermBtn);
+                row.appendChild(top); row.appendChild(controls); ownedDiv.appendChild(row);
+            });
+        }
+        // profile modal avatar preview
+        const pimg = document.getElementById('profile-avatar-img');
+        if(pimg){ if(state.user.avatar){ pimg.src = state.user.avatar; pimg.style.display='block'; } else { pimg.src=''; pimg.style.display='none'; }}
+        // render saved posts in profile modal
+        const savedList = document.getElementById('user-saved-list');
+        if(savedList){
+            savedList.innerHTML = '';
+            const savedIds = state.saved || [];
+            if(savedIds.length === 0){
+                savedList.innerHTML = '<div style="color:var(--text-muted)">Henüz kaydedilmiş gönderiniz yok</div>';
+            } else {
+                savedIds.forEach(id => {
+                    const post = state.posts.find(p => p.id === id);
+                    if(!post) return;
+                    const item = document.createElement('div');
+                    item.style.display = 'flex'; item.style.justifyContent='space-between'; item.style.alignItems='center';
+                    item.style.padding = '6px'; item.style.borderBottom = '1px solid var(--border-color)';
+                    const left = document.createElement('div'); left.style.flex='1'; left.style.marginRight='8px';
+                    left.innerHTML = `<div style="font-weight:600">${post.title}</div><div style="font-size:0.85rem; color:var(--text-muted)">${post.author} • ${post.date}</div>`;
+                    const actions = document.createElement('div'); actions.style.display='flex'; actions.style.gap='6px';
+                    const openBtn = document.createElement('button'); openBtn.className='btn-secondary'; openBtn.textContent='Aç'; openBtn.onclick = ()=>{ closeModal('modal-profile'); openComments(post.id); };
+                    const removeBtn = document.createElement('button'); removeBtn.className='btn-secondary'; removeBtn.textContent='Kaldır'; removeBtn.onclick = ()=>{ removeSaved(post.id); };
+                    actions.appendChild(openBtn); actions.appendChild(removeBtn);
+                    item.appendChild(left); item.appendChild(actions);
+                    savedList.appendChild(item);
+                });
+            }
+        }
+        const commentsList = document.getElementById('user-comments-list');
+        if(commentsList){
+            const myComments = [];
+            (state.posts || []).forEach(post => (post.comments || []).forEach(comment => {
+                if(comment.author === state.user.name) myComments.push({ post, comment });
+            }));
+            commentsList.innerHTML = myComments.length ? myComments.slice().reverse().map(item => `<div class="comment-card" style="cursor:pointer" onclick="closeModal('modal-profile'); openComments(${item.post.id})"><b>${item.comment.body}</b><div class="comment-meta">${item.post.title}</div></div>`).join('') : '<div style="color:var(--text-muted)">Henüz yorumunuz yok.</div>';
+        }
+        // settings
+        const showProf = state.user.settings && state.user.settings.showProfile;
+        const autoLogin = state.user.settings && state.user.settings.autoLogin;
+        const s1 = document.getElementById('setting-show-profile'); if(s1) s1.checked = !!showProf;
+        const s2 = document.getElementById('setting-autologin'); if(s2) s2.checked = !!autoLogin;
+    }
+
+    function renderSubs() {
+        const subList = document.getElementById('sub-list');
+        const select = document.getElementById('post-sub-select');
+        subList.innerHTML = '';
+        select.innerHTML = '';
+
+        state.subs.forEach(s => {
+            const isSub = state.user.subscriptions && state.user.subscriptions.includes(s.name);
+            const isOwner = s.owner && state.user && state.user.name && s.owner === state.user.name;
+            const allowedToDelete = isOwner || (s.deletePermission && s.deletePermission === 'anyone');
+            // show delete button only if allowed by permission
+            subList.innerHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <div class="nav-link" onclick="filterFeed('${s.name}')" oncontextmenu="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-hashtag"></i> i/${s.name}</div>
+                    <div style="display:flex; gap:6px; align-items:center">
+                        <button class="btn-secondary" onclick="toggleSubscribe('${s.name}')">${isSub ? t('leave') : t('subscribe')}</button>
+                        ${allowedToDelete ? `<button class="btn-danger" onclick="deleteSub('${s.name}')">Sil</button>` : ''}
+                    </div>
+                </div>
+            `;
+            select.innerHTML += `<option value="${s.name}">i/${s.name}</option>`;
+        });
+    }
+
+    function renderActiveSubs(){
+        const container = document.getElementById('active-subs-list');
+        if(!container) return;
+        container.innerHTML = '';
+        const list = (state.activeSubs || []).slice();
+        if(list.length === 0){
+            container.innerHTML = '<div style="color:var(--text-muted)">Henüz aktif sub yok</div>';
+            return;
+        }
+        list.forEach(s => {
+            const el = document.createElement('div');
+            el.style.display = 'flex'; el.style.justifyContent='space-between'; el.style.alignItems='center'; el.style.gap='8px';
+            el.innerHTML = `<div class="nav-link" style="padding:6px 8px;" onclick="filterFeed('${s}')">i/${s}</div><button class="btn-secondary" onclick="activeSubContext='${s}'; openPostComposer();">Bu Subda Paylaş</button>`;
+            container.appendChild(el);
+        });
+    }
+
+    function deleteSub(subName){
+        const sub = state.subs.find(s=>s.name===subName);
+        if(!sub) return alert('Sub bulunamadı');
+        const isOwner = sub.owner && state.user && state.user.name && sub.owner === state.user.name;
+        const allowedToDelete = isOwner || (sub.deletePermission && sub.deletePermission === 'anyone');
+        if(!allowedToDelete) return alert('Bu subu silme yetkiniz yok.');
+        if(!confirm(`i/${subName} silinecek. Bu işlem geri alınamaz. Devam edilsin mi?`)) return;
+        // remove from subs
+        state.subs = state.subs.filter(s => s.name !== subName);
+        // remove posts in that sub
+        const before = state.posts.length;
+        state.posts = state.posts.filter(p => p.sub !== subName);
+        const removed = before - state.posts.length;
+        // remove subscription references from users
+        state.users = (state.users || []).map(u => ({ ...u, subscriptions: (u.subscriptions || []).filter(x => x !== subName) }));
+        // if current user had it, update
+        if(state.user && state.user.subscriptions) state.user.subscriptions = state.user.subscriptions.filter(x => x !== subName);
+        // remove from activeSubs if present
+        if(state.activeSubs) state.activeSubs = state.activeSubs.filter(s => s !== subName);
+        saveState();
+        renderSubs();
+        renderPosts();
+        alert(`i/${subName} silindi. ${removed} gönderi kaldırıldı.`);
+    }
+
+    function transferOwnership(subName, newOwner){
+        const sub = state.subs.find(s=>s.name===subName);
+        if(!sub) return alert('Sub bulunamadı');
+        if(!(sub.owner && state.user && state.user.name && sub.owner === state.user.name)) return alert('Sadece sub sahibi transfer edebilir.');
+        if(!state.users.some(u=>u.name===newOwner)) return alert('Yeni sahip bulunamadı');
+        sub.owner = newOwner;
+        saveState();
+        renderSubs();
+        renderProfile();
+        alert(`i/${subName} sahibi ${newOwner} olarak değiştirildi.`);
+    }
+
+    function setSubDeletePermission(subName, perm){
+        const sub = state.subs.find(s=>s.name===subName);
+        if(!sub) return alert('Sub bulunamadı');
+        if(!(sub.owner && state.user && state.user.name && sub.owner === state.user.name)) return alert('Yalnızca sahip izinleri değiştirebilir.');
+        if(!['owner','anyone'].includes(perm)) return alert('Geçersiz izin');
+        sub.deletePermission = perm;
+        saveState();
+        renderSubs();
+        renderProfile();
+        alert('İzin güncellendi.');
+    }
+
+    function setSubCommentDeletePermission(subName, perm){
+        const sub = state.subs.find(s=>s.name===subName);
+        if(!sub) return alert('Sub bulunamadı');
+        if(!(sub.owner && state.user && state.user.name && sub.owner === state.user.name)) return alert('Yalnızca sahip izinleri değiştirebilir.');
+        if(!['author','owner','anyone'].includes(perm)) return alert('Geçersiz izin');
+        sub.commentDeletePermission = perm;
+        saveState();
+        renderSubs();
+        renderProfile();
+        alert('Yorum silme izni güncellendi.');
+    }
+
+    function openSubProperties(evt, subName){
+        if(evt && evt.preventDefault) evt.preventDefault();
+        const sub = state.subs.find(s=>s.name===subName);
+        if(!sub) return alert('Sub bulunamadı');
+        document.getElementById('prop-sub-name').value = sub.name;
+        document.getElementById('prop-sub-desc').value = sub.desc || '';
+        document.getElementById('prop-sub-owner').value = sub.owner || '';
+        document.getElementById('prop-sub-deleteperm').value = sub.deletePermission || 'owner';
+        document.getElementById('prop-sub-commentperm').value = sub.commentDeletePermission || 'author';
+        document.getElementById('prop-transfer-owner').value = '';
+        // stats: participants and active posts
+        const participants = (state.users || []).filter(u => (u.subscriptions || []).includes(subName)).length;
+        const activePosts = (state.posts || []).filter(p => p.sub === subName).length;
+        document.getElementById('prop-sub-stats').innerText = `Katılımcılar: ${participants} • Gönderiler: ${activePosts}`;
+        // owner-only controls
+        const isOwner = sub.owner && state.user && state.user.name && sub.owner === state.user.name;
+        const ownerControls = document.getElementById('prop-owner-controls');
+        const descEl = document.getElementById('prop-sub-desc');
+        const saveBtn = document.getElementById('prop-save-btn');
+        if(!isOwner){
+            // non-owners can only view: make desc readonly and hide owner controls
+            if(ownerControls) ownerControls.style.display = 'none';
+            if(descEl) { descEl.readOnly = true; descEl.style.background = 'var(--muted-bg)'; }
+            if(saveBtn) saveBtn.style.display = 'none';
+        } else {
+            if(ownerControls) ownerControls.style.display = 'block';
+            if(descEl) { descEl.readOnly = false; descEl.style.background = ''; }
+            if(saveBtn) saveBtn.style.display = 'inline-block';
+        }
+        openModal('modal-sub-props');
+    }
+
+    function saveSubProperties(){
+        const name = document.getElementById('prop-sub-name').value;
+        const sub = state.subs.find(s=>s.name===name);
+        if(!sub) return alert('Sub bulunamadı');
+        // only owner can change properties
+        const currentUserIsOwner = sub.owner && state.user && state.user.name && sub.owner === state.user.name;
+        if(!currentUserIsOwner){
+            return alert('Sadece sub kurucusu bu ayarları değiştirebilir.');
+        }
+        sub.desc = document.getElementById('prop-sub-desc').value || '';
+        sub.deletePermission = document.getElementById('prop-sub-deleteperm').value;
+        sub.commentDeletePermission = document.getElementById('prop-sub-commentperm').value;
+        saveState(); renderSubs(); renderProfile(); closeModal('modal-sub-props');
+        alert('Sub özellikleri kaydedildi.');
+    }
+
+    function transferOwnerFromModal(){
+        const subName = document.getElementById('prop-sub-name').value;
+        const newOwner = document.getElementById('prop-transfer-owner').value.trim();
+        if(!newOwner) return alert('Yeni sahip rumuzunu girin');
+        transferOwnership(subName, newOwner);
+        closeModal('modal-sub-props');
+    }
+
+    function profileAvatarChanged(input){
+        const file = input.files && input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e){
+            state.user.avatar = e.target.result;
+            saveState();
+            renderProfile();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function toggleSubscribe(subName){
+        if(!state.user.subscriptions) state.user.subscriptions = [];
+        const idx = state.user.subscriptions.indexOf(subName);
+        if(idx > -1) state.user.subscriptions.splice(idx,1);
+        else state.user.subscriptions.push(subName);
+        saveState();
+        renderSubs();
+    }
+
+    // Demo içerik özelliği kaldırıldı
+
+    function submitSub() {
+        const name = document.getElementById('sub-name').value.trim().toLowerCase().replace(/\s+/g, '');
+        const desc = document.getElementById('sub-desc').value.trim();
+        if(!name) return alert('Sub adı boş olamaz!');
+        if(state.subs.some(s => s.name === name)) return alert('Bu sub zaten var!');
+
+        // assign owner as current user and default deletePermission
+        const owner = state.user && state.user.name ? state.user.name : 'system';
+        state.subs.push({ name, desc, owner, deletePermission: 'owner', commentDeletePermission: 'author' });
+        saveState();
+        renderSubs();
+        closeModal('modal-sub');
+        document.getElementById('sub-name').value = '';
+        document.getElementById('sub-desc').value = '';
+    }
+
+    function resetPostComposer(){
+        const fields = ['post-title', 'post-body', 'post-img', 'post-tags', 'post-media-type', 'post-media-src'];
+        fields.forEach(id => {
+            const field = document.getElementById(id);
+            if(field) field.value = '';
+        });
+        const fileInput = document.getElementById('post-file');
+        if(fileInput) fileInput.value = '';
+        const preview = document.getElementById('post-media-preview');
+        if(preview) preview.innerHTML = '';
+        const nsfw = document.getElementById('post-nsfw');
+        const spoiler = document.getElementById('post-spoiler');
+        if(nsfw) nsfw.checked = false;
+        if(spoiler) spoiler.checked = false;
+    }
+
+    function submitPost() {
+        if(!isRegisteredUser()){
+            alert('Post paylaşmak için önce hesap oluşturmalısınız veya oturum açmalısınız.');
+            closeModal('modal-post');
+            openModal('modal-login');
+            return;
+        }
+        const sub = activeSubContext || document.getElementById('post-sub-select').value;
+        const title = document.getElementById('post-title').value.trim();
+        const body = document.getElementById('post-body').value.trim();
+        const img = document.getElementById('post-img').value.trim();
+        const tags = document.getElementById('post-tags').value.split(',').map(tag => tag.trim().toLowerCase().replace(/\s+/g, '-')).filter(Boolean).filter((tag, index, list) => list.indexOf(tag) === index).slice(0, 5);
+        const mediaType = document.getElementById('post-media-type').value;
+        const mediaSrc = document.getElementById('post-media-src').value;
+        const isNsfw = document.getElementById('post-nsfw').checked;
+        const isSpoiler = document.getElementById('post-spoiler').checked;
+
+        if(!title) return alert('Başlık gerekli!');
+
+        const newPost = {
+            id: Date.now(),
+            sub,
+            title,
+            body,
+            media: mediaSrc ? { type: mediaType, src: mediaSrc } : (img ? { type: 'image', src: img } : null),
+            isNsfw,
+            isSpoiler,
+            tags,
+            author: state.user.name,
+            authorId: state.user.id || null,
+            votes: 0,
+            views: 0,
+            viewedBy: {},
+            comments: [],
+            createdAt: Date.now(),
+            date: new Date().toLocaleString('tr-TR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        };
+
+        state.posts.unshift(newPost);
+        // mark this sub as active (someone posted here)
+        if(!state.activeSubs) state.activeSubs = [];
+        if(sub && !state.activeSubs.includes(sub)) state.activeSubs.push(sub);
+        saveState();
+        renderPosts();
+        renderProfile();
+        renderActiveSubs();
+        closeModal('modal-post');
+        resetPostComposer();
+    }
+
+    function getAuthorAvatarHtml(username){
+        const user = username === state.user.name ? state.user : (state.users || []).find(item => item.name === username);
+        if(user && user.avatar){
+            const avatarSource = safeMediaUrl(user.avatar);
+            return avatarSource ? `<span class="author-avatar"><img src="${avatarSource}" alt="${escapeHtml(username)} profil fotoğrafı"></span>` : `<span class="author-avatar">${escapeHtml((username || '?').charAt(0).toUpperCase())}</span>`;
+        }
+        return `<span class="author-avatar">${escapeHtml((username || '?').charAt(0).toUpperCase())}</span>`;
+    }
+
+    function getAuthorKarma(username){
+        const user = username === state.user.name ? state.user : (state.users || []).find(item => item.name === username);
+        return user && Number.isFinite(user.karma) ? user.karma : 0;
+    }
+
+    function protectNsfwMedia(mediaHtml, isNsfw){
+        if(!isNsfw || !mediaHtml) return mediaHtml;
+        return `<div class="nsfw-media" onclick="event.stopPropagation(); revealNsfwMedia(this)"><div class="nsfw-warning">${t('nsfwContent')}<br>${t('clickToReveal')}</div>${mediaHtml}</div>`;
+    }
+
+    function revealNsfwMedia(element){
+        if(element) element.classList.add('is-revealed');
+    }
+
+    function renderSiteStats(){
+        const activeSince = Date.now() - (24 * 60 * 60 * 1000);
+        const activeUsers = new Set();
+        (state.posts || []).forEach(post => {
+            const postTime = Number.isFinite(post.createdAt) ? post.createdAt : Number(post.id);
+            if(postTime >= activeSince){
+                if(post.author) activeUsers.add(post.author);
+                (post.comments || []).forEach(comment => {
+                    if(comment.author && Number.isFinite(comment.createdAt) && comment.createdAt >= activeSince) activeUsers.add(comment.author);
+                });
+            } else {
+                (post.comments || []).forEach(comment => {
+                    if(comment.author && Number.isFinite(comment.createdAt) && comment.createdAt >= activeSince) activeUsers.add(comment.author);
+                });
+            }
+        });
+        const commentCount = (state.posts || []).reduce((total, post) => total + (post.comments ? post.comments.length : 0), 0);
+        const values = {
+            'site-stat-users': activeUsers.size,
+            'site-stat-posts': (state.posts || []).length,
+            'site-stat-comments': commentCount,
+            'site-stat-subs': (state.subs || []).length
+        };
+        Object.entries(values).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if(element) element.innerText = value;
+        });
+    }
+
+    function renderPosts(filteredList = null, title = null) {
+        const container = document.getElementById('posts-container');
+        container.innerHTML = '';
+
+        let postsToRender = filteredList || state.posts.slice();
+        if(!filteredList){
+            if(state.feedMode === 'following'){
+                const following = state.user.following || [];
+                postsToRender = postsToRender.filter(post => following.includes(post.author));
+            } else if(state.feedMode === 'saved') {
+                postsToRender = postsToRender.filter(post => state.saved.includes(post.id));
+            } else if(state.feedMode === 'discover') {
+                postsToRender = postsToRender.filter(post => post.author !== state.user.name);
+            }
+        }
+        // apply sort
+        if(state.sortMode === 'new') postsToRender.sort((a,b)=> b.id - a.id);
+        else if(state.sortMode === 'top') postsToRender.sort((a,b)=> b.votes - a.votes);
+        else if(state.sortMode === 'hot') postsToRender.sort((a,b)=> (b.votes + (b.comments?b.comments.length:0)) - (a.votes + (a.comments? a.comments.length:0)));
+        document.getElementById('feed-title').innerText = title || t('allFeed');
+
+        if(postsToRender.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:40px;">Gönderi bulunamadı.</div>';
+            return;
+        }
+
+        postsToRender.slice(0, state.feedLimit).forEach(p => {
+            const commentCount = p.comments ? p.comments.length : 0;
+            const viewCount = Number.isFinite(p.views) ? p.views : 0;
+            const isSaved = state.saved.includes(p.id);
+            const userVote = (state.user.votes && state.user.votes[p.id]) || 0;
+            let mediaHtml = '';
+            const tagsHtml = (p.tags || []).length ? `<div class="tag-list">${p.tags.map(tag => `<span class="post-tag-link" data-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</span>`).join('')}</div>` : '';
+            if(p.media && p.media.src){
+                const mediaSource = safeMediaUrl(p.media.src);
+                if(p.media.type && p.media.type.startsWith('video')){
+                    mediaHtml = mediaSource ? `<video class="post-image" controls onclick="event.stopPropagation(); revealNsfwMedia(this.parentElement)" src="${mediaSource}"></video>` : '';
+                } else {
+                    mediaHtml = mediaSource ? `<img src="${mediaSource}" class="post-image" onclick="event.stopPropagation()" alt="Post Image">` : '';
+                }
+            }
+            mediaHtml = protectNsfwMedia(mediaHtml, p.isNsfw);
+
+            const expandedCommentsHtml = state.expandedPostId === p.id ? `
+                <div class="inline-comments" onclick="event.stopPropagation()">
+                    <div class="inline-comment-form">
+                        <textarea class="textarea-field" id="new-comment-body-inline" placeholder="Yorum yaz..."></textarea>
+                        <button class="btn-primary" onclick="submitComment()">Gönder</button>
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">${commentCount} yorum</div>
+                    <div id="comments-list-inline" style="display:flex; flex-direction:column; gap:8px;">
+                        ${renderCommentsMarkup(p)}
+                    </div>
+                </div>
+            ` : '';
+
+            container.innerHTML += `
+                <div class="post-card ${state.expandedPostId === p.id ? 'is-expanded' : ''}" onclick="openComments(${p.id})">
+                    <div class="vote-box">
+                        <button class="vote-btn ${userVote===1 ? 'voted-up' : ''}" onclick="event.stopPropagation(); vote(${p.id}, 1)"><i class="fa-solid fa-chevron-up"></i></button>
+                        <span>${p.votes}</span>
+                        <button class="vote-btn ${userVote===-1 ? 'voted-down' : ''}" onclick="event.stopPropagation(); vote(${p.id}, -1)"><i class="fa-solid fa-chevron-down"></i></button>
+                    </div>
+                    <div class="post-content">
+                        <div class="post-meta">
+                            <a class="sub-tag post-sub-badge" data-sub="${escapeHtml(p.sub)}">i/${escapeHtml(p.sub)}</a>
+                            <span class="author-line" data-username="${escapeHtml(p.author)}" style="cursor:pointer; color:var(--accent);">${getAuthorAvatarHtml(p.author)}${escapeHtml(p.author)}</span>
+                            <span class="post-author-karma">${getAuthorKarma(p.author)} karma</span> • 
+                            <span>${escapeHtml(p.date)}</span>
+                            ${p.editedAt ? '<span style="font-size:0.75rem; color:var(--text-muted);">(düzenlendi)</span>' : ''}
+                            ${p.isNsfw ? '<span class="post-tag tag-nsfw">NSFW</span>' : ''}
+                            ${p.isSpoiler ? '<span class="post-tag tag-spoiler">Spoiler</span>' : ''}
+                        </div>
+                        <div class="post-title" style="cursor:pointer;">${escapeHtml(p.title)}</div>
+                        <div class="post-body">${escapeHtml(p.body)}</div>
+                        ${tagsHtml}
+                        ${mediaHtml}
+                        <div class="post-actions">
+                            <span class="action-btn" title="${t('views')}"><i class="fa-regular fa-eye"></i> ${viewCount}</span>
+                            <button class="action-btn" onclick="event.stopPropagation(); openComments(${p.id})"><i class="fa-regular fa-comment"></i> ${commentCount} ${t('comments')}</button>
+                            <button class="action-btn" onclick="event.stopPropagation(); toggleSave(${p.id})"><i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i> ${isSaved ? t('savedLabel') : t('save')}</button>
+                            <button class="action-btn" onclick="event.stopPropagation(); reportPost(${p.id})"><i class="fa-solid fa-flag"></i> ${t('report')}</button>
+                            ${((p.authorId && state.user.id && p.authorId === state.user.id) || (!p.authorId && p.author === state.user.name)) ? `<button class="action-btn" onclick="event.stopPropagation(); deletePost(${p.id})"><i class="fa-solid fa-trash"></i> ${t('delete')}</button>` : ''}
+                            ${((p.authorId && state.user.id && p.authorId === state.user.id) || (!p.authorId && p.author === state.user.name)) ? `<button class="action-btn" onclick="event.stopPropagation(); editPost(${p.id})"><i class="fa-solid fa-pen"></i> ${t('edit')}</button>` : ''}
+                        </div>
+                        ${expandedCommentsHtml}
+                    </div>
+                </div>
+            `;
+        });
+        container.querySelectorAll('[data-username]').forEach(element => element.addEventListener('click', event => {
+            event.stopPropagation();
+            openUserProfile(element.dataset.username);
+        }));
+        container.querySelectorAll('[data-sub]').forEach(element => element.addEventListener('click', event => {
+            event.stopPropagation();
+            filterFeed(element.dataset.sub);
+        }));
+        container.querySelectorAll('[data-tag]').forEach(element => element.addEventListener('click', event => {
+            event.stopPropagation();
+            filterByTag(element.dataset.tag);
+        }));
+        // pagination: load more
+        if(postsToRender.length === 0){
+            const ph = document.createElement('div'); ph.className='empty-placeholder';
+            ph.innerHTML = `<div style="font-size:1.1rem; margin-bottom:8px;">Henüz gösterilecek gönderi yok</div><div>Sağ üstten paylaşabilirsiniz.</div><div style="margin-top:10px"><button class='btn-primary' onclick='openPostComposer()'>Post Oluştur</button></div>`;
+            container.appendChild(ph);
+            return;
+        }
+
+        if(postsToRender.length > state.feedLimit){
+            const btn = document.createElement('button');
+            btn.className = 'btn-secondary'; btn.textContent = 'Daha Fazla Yükle';
+            btn.onclick = ()=>{ state.feedLimit += 8; renderPosts(); };
+            const wrap = document.createElement('div'); wrap.style.textAlign='center'; wrap.appendChild(btn);
+            container.appendChild(wrap);
+        }
+    }
+
+    function openComments(id) {
+        activePostIdForComments = id;
+        const post = state.posts.find(p => p.id === id);
+        if(!post) return;
+
+        if(!post.viewedBy || typeof post.viewedBy !== 'object') post.viewedBy = {};
+        const viewerKey = state.user.id ? `user:${state.user.id}` : `name:${state.user.name}`;
+        if(!post.viewedBy[viewerKey]){
+            post.viewedBy[viewerKey] = Date.now();
+            post.views = (Number.isFinite(post.views) ? post.views : 0) + 1;
+            saveState();
+        }
+        state.expandedPostId = state.expandedPostId === id ? null : id;
+        renderPosts();
+        if(state.expandedPostId === id){
+            requestAnimationFrame(() => document.querySelector('.post-card.is-expanded')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+        }
+    }
+
+    function renderCommentsMarkup(post){
+        if(!post.comments || post.comments.length === 0){
+            return '<div style="color:var(--text-muted); font-size:0.85rem;">Henüz yorum yapılmamış.</div>';
+        }
+        const sub = state.subs.find(item => item.name === post.sub) || {};
+        const cperm = sub.commentDeletePermission || 'author';
+        return post.comments.map((c, idx) => {
+            const mediaSource = c.media && safeMediaUrl(c.media.src);
+            const mediaHtml = mediaSource ? protectNsfwMedia(c.media.type && c.media.type.startsWith('video') ? `<video class="post-image" controls onclick="event.stopPropagation(); revealNsfwMedia(this.parentElement)" src="${mediaSource}"></video>` : `<img src="${mediaSource}" class="post-image" alt="Comment Image">`, post.isNsfw) : '';
+            const canDelete = c.author === state.user.name || (cperm === 'owner' && sub.owner === state.user.name) || cperm === 'anyone';
+            const canEdit = c.author === state.user.name;
+            return `<div class="comment-card">
+                <div class="comment-meta">
+                    <span class="author-line"><span class="comment-author-link" data-username="${escapeHtml(c.author)}" style="cursor:pointer;">${getAuthorAvatarHtml(c.author)}</span><b class="comment-author-link" data-username="${escapeHtml(c.author)}" style="cursor:pointer; color:var(--accent);">${escapeHtml(c.author)}</b></span>
+                    • ${escapeHtml(c.date)} ${c.edited ? '<span>(düzenlendi)</span>' : ''}
+                </div>
+                <div>${escapeHtml(c.body)}</div>${mediaHtml}
+                ${(canEdit || canDelete) ? `<div style="margin-top:8px; display:flex; gap:6px;">
+                    ${canEdit ? `<button class="btn-secondary" onclick="event.stopPropagation(); editComment(${post.id}, ${idx})">Düzenle</button>` : ''}
+                    ${canDelete ? `<button class="btn-secondary" onclick="event.stopPropagation(); deleteComment(${post.id}, ${idx})">Sil</button>` : ''}
+                </div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    function renderCommentsList(post) {
+        const list = document.getElementById('comments-list');
+        list.innerHTML = '';
+        
+        if(!post.comments || post.comments.length === 0) {
+            list.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Henüz yorum yapılmamış.</div>';
+            return;
+        }
+
+        post.comments.forEach((c, idx) => {
+            const mediaSource = c.media && safeMediaUrl(c.media.src);
+            const mediaHtml = mediaSource ? (c.media.type && c.media.type.startsWith('video') ? `<video class="post-image" controls src="${mediaSource}"></video>` : `<img src="${mediaSource}" class="post-image" alt="Comment Image">`) : '';
+            // permission: author | owner | anyone
+            const sub = state.subs.find(s=>s.name === post.sub) || {};
+            const cperm = sub.commentDeletePermission || 'author';
+            let canDelete = false;
+            if(c.author === state.user.name) canDelete = true;
+            if(cperm === 'owner' && sub.owner === state.user.name) canDelete = true;
+            if(cperm === 'anyone') canDelete = true;
+            let canEdit = c.author === state.user.name;
+            list.innerHTML += `
+                <div class="comment-card">
+                    <div class="comment-meta">
+                        <span class="author-line"><span class="comment-author-link" data-username="${escapeHtml(c.author)}" style="cursor:pointer;">${getAuthorAvatarHtml(c.author)}</span><b class="comment-author-link" data-username="${escapeHtml(c.author)}" style="cursor:pointer; color:var(--accent);">${escapeHtml(c.author)}</b></span>
+                        • ${escapeHtml(c.date)}
+                        ${c.edited ? '<span style="font-size:0.75rem; color:var(--text-muted);">(düzenlendi)</span>' : ''}
+                    </div>
+                    <div>${escapeHtml(c.body)}</div>
+                    ${mediaHtml}
+                    ${(canEdit || canDelete) ? `<div style="margin-top:8px; display:flex; gap:6px;">
+                        ${canEdit ? `<button class="btn-secondary" onclick="editComment(${post.id}, ${idx})">Düzenle</button>` : ''}
+                        ${canDelete ? `<button class="btn-secondary" onclick="deleteComment(${post.id}, ${idx})">Sil</button>` : ''}
+                    </div>` : ''}
+                </div>
+            `;
+        });
+        list.querySelectorAll('[data-username]').forEach(element => element.addEventListener('click', () => openUserProfile(element.dataset.username)));
+    }
+
+    function submitComment() {
+        const bodyInput = document.getElementById('new-comment-body-inline') || document.getElementById('new-comment-body');
+        const body = bodyInput.value.trim();
+        if(!body) return alert('Yorum boş olamaz!');
+        // require registered account to comment
+        const isRegistered = state.user && (state.user.id && (state.users || []).some(u=>u.id === state.user.id));
+        if(!isRegistered) return alert('Yorum yazmak için giriş yapmanız veya hesap oluşturmanız gerekir.');
+
+        const post = state.posts.find(p => p.id === activePostIdForComments);
+        if(post) {
+            if(!post.comments) post.comments = [];
+            const mediaTypeElement = document.getElementById('comment-media-type');
+            const mediaSrcElement = document.getElementById('comment-media-src');
+            const mediaType = mediaTypeElement ? mediaTypeElement.value : '';
+            const mediaSrc = mediaSrcElement ? mediaSrcElement.value : '';
+            const commentObj = {
+                author: state.user.name,
+                body,
+                createdAt: Date.now(),
+                date: new Date().toLocaleString('tr-TR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            };
+            if(mediaSrc) commentObj.media = { type: mediaType, src: mediaSrc };
+            post.comments.push(commentObj);
+            addNotification(post.author, 'comment', `${state.user.name}, "${post.title}" postuna yorum yaptı.`, post.id);
+            // clear comment media inputs and preview
+            if(mediaSrcElement) mediaSrcElement.value = '';
+            if(mediaTypeElement) mediaTypeElement.value = '';
+            const preview = document.getElementById('comment-media-preview'); if(preview) preview.innerHTML = '';
+            // Karma now comes from votes (Reddit-like). No automatic karma for commenting.
+            saveState();
+            renderPosts();
+            renderProfile();
+            bodyInput.value = '';
+        }
+    }
+
+    function deleteComment(postId, idx){
+        const post = state.posts.find(p=>p.id === postId);
+        if(!post || !post.comments || !post.comments[idx]) return alert('Yorum bulunamadı');
+        // check permissions again
+        const c = post.comments[idx];
+        const sub = state.subs.find(s=>s.name===post.sub) || {};
+        const cperm = sub.commentDeletePermission || 'author';
+        const isAuthor = c.author === state.user.name;
+        const isOwner = sub.owner === state.user.name;
+        if(!( (cperm==='anyone') || (cperm==='owner' && isOwner) || isAuthor )) return alert('Bu yorumu silme yetkiniz yok');
+        if(!confirm('Yorumu silmek istediğine emin misin?')) return;
+        post.comments.splice(idx,1);
+        saveState();
+        renderCommentsList(post);
+        renderPosts();
+        renderProfile();
+    }
+
+    function toggleSave(id) {
+        const idx = state.saved.indexOf(id);
+        if(idx > -1) state.saved.splice(idx, 1);
+        else state.saved.push(id);
+        saveState();
+        renderPosts();
+    }
+
+    function removeSaved(id){
+        const idx = state.saved.indexOf(id);
+        if(idx > -1) state.saved.splice(idx,1);
+        saveState();
+        renderProfile();
+        renderPosts();
+    }
+
+    function vote(id, change) {
+        if(!state.user.votes) state.user.votes = {};
+
+        const post = state.posts.find(p => p.id === id);
+        if(!post) return;
+
+        // prevent self-voting
+        if(post.author === state.user.name) return alert('Kendi gönderine oy veremezsin.');
+
+        // find author user object (could be current user or in state.users)
+        let authorUser = null;
+        if(state.user && state.user.name === post.author) authorUser = state.user;
+        else authorUser = (state.users || []).find(u=>u.name === post.author);
+
+        const existing = state.user.votes[id] || 0;
+        if(existing === change) {
+            // undo
+            post.votes -= change;
+            delete state.user.votes[id];
+            if(authorUser) authorUser.karma -= change;
+        } else if(existing === 0) {
+            // new vote
+            post.votes += change;
+            state.user.votes[id] = change;
+            if(authorUser) authorUser.karma += change;
+        } else {
+            // switch vote
+            post.votes -= existing;
+            post.votes += change;
+            state.user.votes[id] = change;
+            if(authorUser) authorUser.karma += (change - existing);
+        }
+
+        saveState();
+        if(change !== 0) addNotification(post.author, 'vote', `${state.user.name}, "${post.title}" postuna oy verdi.`, post.id);
+        renderPosts();
+        renderProfile();
+    }
+
+    function deletePost(id) {
+        const idx = state.posts.findIndex(p => p.id === id);
+        if(idx === -1) return;
+        const post = state.posts[idx];
+        // allow delete only for actual post author (prefer id match)
+        const isAuthor = (post.authorId && state.user.id && post.authorId === state.user.id) || (!post.authorId && post.author === state.user.name);
+        if(!isAuthor) return alert('Sadece kendi gönderini silebilirsin.');
+        if(!confirm('Gönderiyi silmek istediğine emin misin?')) return;
+        state.posts.splice(idx, 1);
+        // also remove saved and votes
+        const svIdx = state.saved.indexOf(id);
+        if(svIdx > -1) state.saved.splice(svIdx, 1);
+        if(state.user.votes && state.user.votes[id]) delete state.user.votes[id];
+        saveState();
+        renderPosts();
+        renderProfile();
+    }
+
+    function editPost(id){
+        const post = state.posts.find(item => item.id === id);
+        if(!post) return alert('Gönderi bulunamadı.');
+        const isAuthor = (post.authorId && state.user.id && post.authorId === state.user.id) || (!post.authorId && post.author === state.user.name);
+        if(!isAuthor) return alert('Sadece kendi gönderini düzenleyebilirsin.');
+        const title = prompt('Başlığı düzenle:', post.title);
+        if(title === null || !title.trim()) return;
+        const body = prompt('İçeriği düzenle:', post.body || '');
+        if(body === null) return;
+        post.title = title.trim();
+        post.body = body.trim();
+        post.editedAt = Date.now();
+        saveState();
+        renderPosts();
+    }
+
+    function filterFeed(sub) { 
+        if(sub === 'all') { activeSubContext = null; renderPosts(state.posts, t('allFeed')); }
+        else { activeSubContext = sub; renderPosts(state.posts.filter(p => p.sub === sub), 'i/' + sub); }
+    }
+
+    function saveProfile() {
+        const name = document.getElementById('profile-name-input').value.trim();
+        const bio = document.getElementById('profile-bio-input').value.trim();
+        if(name) state.user.name = name;
+        if(bio) state.user.bio = bio;
+        // save settings
+        if(!state.user.settings) state.user.settings = {};
+        state.user.settings.showProfile = !!document.getElementById('setting-show-profile').checked;
+        state.user.settings.autoLogin = !!document.getElementById('setting-autologin').checked;
+        // persist changes into users list as well so profile doesn't vanish after logout
+        if(state.user && (state.user.id || state.user.name)){
+            const uid = state.user.id;
+            let idx = -1;
+            if(uid) idx = (state.users || []).findIndex(u=>u.id === uid);
+            if(idx === -1) idx = (state.users || []).findIndex(u=>u.name === state.user.name);
+            if(idx !== -1){
+                // merge fields
+                state.users[idx].name = state.user.name;
+                state.users[idx].bio = state.user.bio;
+                state.users[idx].avatar = state.user.avatar;
+                state.users[idx].settings = state.user.settings;
+            } else {
+                // not found in users, add it
+                state.users = state.users || [];
+                state.users.push(Object.assign({}, state.user));
+            }
+        }
+        saveState();
+        renderProfile();
+        closeModal('modal-profile');
+    }
+
+    function setSort(mode){ state.sortMode = mode; renderPosts(); }
+
+    function exportFullBackup(){
+        const backup = {
+            format: 'izanai-backup',
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            state: {
+                user: state.user,
+                subs: state.subs,
+                posts: state.posts,
+                saved: state.saved,
+                reports: state.reports,
+                activeSubs: state.activeSubs,
+                users: state.users,
+                feedMode: state.feedMode,
+                sortMode: state.sortMode
+            }
+        };
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `izanai-tam-kayit-${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importFullBackup(input){
+        const file = input.files && input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = event => {
+            try{
+                const backup = JSON.parse(event.target.result);
+                const imported = backup && backup.state;
+                if(backup.format !== 'izanai-backup' || !imported || !Array.isArray(imported.posts) || !Array.isArray(imported.users) || !Array.isArray(imported.subs)){
+                    throw new Error('Geçersiz izanai kayıt dosyası.');
+                }
+                const existingUserKeys = new Set((state.users || []).map(user => user.id || `name:${user.name}`));
+                imported.users.forEach(user => {
+                    const key = user.id || `name:${user.name}`;
+                    if(!existingUserKeys.has(key)) state.users.push(user);
+                });
+                const existingSubNames = new Set((state.subs || []).map(sub => sub.name));
+                imported.subs.forEach(sub => {
+                    if(!existingSubNames.has(sub.name)) state.subs.push(sub);
+                });
+                const existingPostIds = new Set((state.posts || []).map(post => post.id));
+                imported.posts.forEach(post => {
+                    if(!existingPostIds.has(post.id)) state.posts.push(post);
+                });
+                state.saved = Array.from(new Set([...(state.saved || []), ...(imported.saved || [])]));
+                state.activeSubs = Array.from(new Set([...(state.activeSubs || []), ...(imported.activeSubs || [])]));
+                const reportKeys = new Set((state.reports || []).map(report => JSON.stringify(report)));
+                (imported.reports || []).forEach(report => {
+                    const key = JSON.stringify(report);
+                    if(!reportKeys.has(key)) state.reports.push(report);
+                });
+                saveState();
+                document.getElementById('sort-select').value = state.sortMode || 'new';
+                setFeedMode(state.feedMode || 'all');
+                renderSubs();
+                renderProfile();
+                renderActiveSubs();
+                closeModal('modal-profile');
+                alert('Tam kayıt mevcut kayıtlar korunarak eklendi.');
+            }catch(error){
+                alert(error.message || 'Kayıt dosyası okunamadı.');
+            }finally{
+                input.value = '';
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // ===== POST REPORTING =====
+    let currentReportPostId = null;
+    function reportPost(postId){
+        const post = state.posts.find(p=>p.id === postId);
+        if(!post) return alert('Göndersi bulunamadı');
+        currentReportPostId = postId;
+        document.getElementById('report-post-detail').innerHTML = `<div><b>${escapeHtml(post.title)}</b></div><div style="font-size:0.85rem; color:var(--text-muted);">${escapeHtml(post.author)} • ${escapeHtml(post.date)}</div>`;
+        openModal('modal-report');
+    }
+    function submitReport(){
+        if(!currentReportPostId) return;
+        const type = document.getElementById('report-type').value || 'other';
+        const reason = document.getElementById('report-reason').value.trim();
+        if(!reason) return alert('Rapor sebebini yazınız');
+        if(!state.reports) state.reports = [];
+        state.reports.push({ postId: currentReportPostId, type, reason, reportedBy: state.user.name, date: new Date().toLocaleDateString('tr-TR') });
+        saveState();
+        closeModal('modal-report');
+        alert('Rapor gönderildi. Teşekkür ederiz.');
+        document.getElementById('report-reason').value = '';
+        document.getElementById('report-type').value = 'spam';
+    }
+
+    // ===== USER FOLLOWING =====
+    function followUser(username){
+        if(!state.user.following) state.user.following = [];
+        if(!state.user.following.includes(username)){
+            state.user.following.push(username);
+            addNotification(username, 'follow', `${state.user.name} seni takip etmeye başladı.`);
+            saveState();
+        }
+    }
+    function unfollowUser(username){
+        if(state.user.following) state.user.following = state.user.following.filter(u=>u !== username);
+        saveState();
+    }
+    function isFollowing(username){
+        return (state.user.following || []).includes(username);
+    }
+
+    // ===== USER PROFILE VIEW =====
+    function openUserProfile(username){
+        const user = (state.users || []).find(u=>u.name === username);
+        if(!user) return alert('Kullanıcı bulunamadı');
+        document.getElementById('user-profile-title').innerText = username;
+        document.getElementById('user-profile-name').innerText = user.name;
+        document.getElementById('user-profile-bio').innerText = user.bio || '(Biyografi yok)';
+        document.getElementById('user-profile-account-age').innerText = getAccountAgeText(user);
+        document.getElementById('user-profile-karma').innerText = user.karma || 0;
+        const userPosts = (state.posts || []).filter(p=>p.author === username);
+        document.getElementById('user-profile-posts').innerText = userPosts.length;
+        document.getElementById('user-profile-followers').innerText = (state.users || []).filter(item => (item.following || []).includes(username)).length;
+        document.getElementById('user-profile-following').innerText = (user.following || []).length;
+        const avatarEl = document.getElementById('user-profile-avatar');
+        if(user.avatar) avatarEl.innerHTML = `<img src="${user.avatar}" style="width:100%; height:100%; object-fit:cover"/>`;
+        else avatarEl.innerText = username.charAt(0).toUpperCase();
+        // follow button
+        const followBtn = document.getElementById('user-profile-follow-btn');
+        const isFollow = isFollowing(username);
+        followBtn.textContent = isFollow ? 'Takipi Bırak' : 'Takip Et';
+        followBtn.onclick = ()=>{
+            if(isFollow){ unfollowUser(username); }
+            else{ followUser(username); }
+            openUserProfile(username); // refresh
+        };
+        // list posts
+        const postsList = document.getElementById('user-profile-posts-list');
+        postsList.innerHTML = '';
+        if(userPosts.length === 0){
+            postsList.innerHTML = '<div style="color:var(--text-muted)">Bu kullanıcı henüz gönderi paylaşmamış</div>';
+        } else {
+            userPosts.slice().reverse().forEach(p=>{
+                const item = document.createElement('div');
+                item.style.padding = '8px'; item.style.background = 'var(--bg-secondary)'; item.style.borderRadius = '6px'; item.style.cursor = 'pointer';
+                item.innerHTML = `<div style="font-weight:600; margin-bottom:4px;">${escapeHtml(p.title)}</div><div style="font-size:0.85rem; color:var(--text-muted);">i/${escapeHtml(p.sub)} • ${p.votes} oy • ${p.comments ? p.comments.length : 0} yorum</div>`;
+                item.onclick = ()=>{ closeModal('modal-user-profile'); openComments(p.id); };
+                postsList.appendChild(item);
+            });
+        }
+        openModal('modal-user-profile');
+    }
+
+    function setFeedMode(mode){
+        state.feedMode = mode;
+        document.querySelectorAll('[data-feed-mode]').forEach(tab => tab.classList.toggle('active', tab.dataset.feedMode === mode));
+        renderPosts();
+    }
+
+    function filterByTag(tag){
+        const query = tag.toLowerCase();
+        const results = state.posts.filter(post => (post.tags || []).includes(query));
+        renderPosts(results, '#' + query);
+    }
+
+    function searchPosts(){
+        const query = document.getElementById('search-input').value.trim().toLowerCase();
+        const resultsBox = document.getElementById('search-results');
+        if(!query){
+            if(resultsBox) resultsBox.style.display = 'none';
+            return renderPosts();
+        }
+        const results = (state.posts || []).filter(post =>
+            (post.title || '').toLowerCase().includes(query) ||
+            (post.body || '').toLowerCase().includes(query) ||
+            (post.sub || '').toLowerCase().includes(query) ||
+            (post.tags || []).some(tag => tag.includes(query))
+        );
+        const users = (state.users || []).filter(user => normalizeUsername(user.name).includes(query)).slice(0, 5);
+        const subs = (state.subs || []).filter(sub => sub.name.toLowerCase().includes(query)).slice(0, 5);
+        if(resultsBox){
+            const items = [
+                ...users.map(user => `<div class="search-result-item" data-search-user="${escapeHtml(user.name)}"><span><i class="fa-solid fa-user"></i> ${escapeHtml(user.name)}</span><span>Kullanıcı</span></div>`),
+                ...subs.map(sub => `<div class="search-result-item" data-search-sub="${escapeHtml(sub.name)}"><span><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(sub.name)}</span><span>Sub</span></div>`)
+            ];
+            resultsBox.innerHTML = items.length ? items.join('') : '<div style="color:var(--text-muted)">Kullanıcı veya sub bulunamadı.</div>';
+            resultsBox.querySelectorAll('[data-search-user]').forEach(element => element.addEventListener('click', () => openUserProfile(element.dataset.searchUser)));
+            resultsBox.querySelectorAll('[data-search-sub]').forEach(element => element.addEventListener('click', () => filterFeed(element.dataset.searchSub)));
+            resultsBox.style.display = 'block';
+        }
+        renderPosts(results, `Arama: "${query}"`);
+    }
+
+    // ===== COMMENT EDIT/DELETE =====
+    function editComment(postId, commentIdx){
+        const post = state.posts.find(p=>p.id === postId);
+        if(!post || !post.comments || !post.comments[commentIdx]) return alert('Yorum bulunamadı');
+        const comment = post.comments[commentIdx];
+        const newBody = prompt('Yorumu düzenle:', comment.body || '');
+        if(newBody === null) return;
+        if(!newBody.trim()) return alert('Yorum boş olamaz');
+        comment.body = newBody.trim();
+        comment.edited = true;
+        saveState();
+        openComments(postId);
+    }
+
+    // INIT
+    populateAccountsSelect();
+    // attempt to load state from server, then init UI
+    (async ()=>{
+        await loadStateFromServer();
+        // attempt auto-login if user previously chose to stay signed in
+        try{
+            const cur = state.user || {};
+            if(cur && cur.id){
+                const found = (state.users || []).find(u=>u.id === cur.id);
+                if(found && found.settings && found.settings.autoLogin){ state.user = found; }
+            } else if(cur && cur.name){
+                const found = (state.users || []).find(u=>u.name === cur.name);
+                if(found && found.settings && found.settings.autoLogin){ state.user = found; }
+            }
+        }catch(e){ console.warn('auto-login check failed', e); }
+        // bind password meter
+        bindPasswordMeter();
+        setLanguage(state.language || 'tr');
+        renderSubs();
+        renderProfile();
+        renderPosts();
+        // ensure activeSubs exists and fallback from posts if empty
+        if(!state.activeSubs || state.activeSubs.length === 0){
+            const found = Array.from(new Set((state.posts || []).map(p => p.sub).filter(Boolean)));
+            state.activeSubs = found;
+            saveState();
+        }
+        renderActiveSubs();
+        window.setInterval(refreshStateFromServer, 20000);
+    })();
+    
+</script>
+<script src="assets/app.js"></script>
+</body>
+</html>

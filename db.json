@@ -1,0 +1,27 @@
+{
+  "state": {
+    "user": {
+      "name": "Anon862",
+      "bio": "Özgür anonim kullanıcı.",
+      "karma": 1,
+      "votes": {}
+    },
+    "subs": [
+      {
+        "name": "genel",
+        "desc": "Genel tartışma ve özgür fikirler."
+      },
+      {
+        "name": "yazilim",
+        "desc": "Kodlama, yazılım ve teknoloji."
+      }
+    ],
+    "posts": [],
+    "saved": [],
+    "activeSubs": [],
+    "users": [],
+    "feedLimit": 8,
+    "sortMode": "new"
+  },
+  "updatedAt": 1788870945762
+}
