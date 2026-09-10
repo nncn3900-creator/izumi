@@ -90,9 +90,12 @@ app.get('/api/state', (req, res)=>{
   }
 });
 
-app.post('/api/post/delete', (req, res)=>{
+function deletePostHandler(req, res){
   try{
-    const { postId, userId, username, passwordHash } = req.body || {};
+    const body = req.body || {};
+    const rawPostId = body.postId || req.params.id;
+    const postId = Number(rawPostId);
+    const { userId, username, passwordHash } = body;
     if(!postId || !userId || !passwordHash) return res.status(400).json({ error: 'missing_credentials' });
     const db = readDB();
     const current = db.state || {};
@@ -110,12 +113,17 @@ app.post('/api/post/delete', (req, res)=>{
       reports: (current.reports || []).filter(report => report.postId !== postId)
     };
     if(!writeDB({ state: nextState, updatedAt: Date.now() })) return res.status(500).json({ error: 'write_failed' });
+    const verified = readDB();
+    if((verified.state.posts || []).some(item => item.id === postId)) return res.status(500).json({ error: 'delete_not_persisted' });
     res.json({ ok: true });
   }catch(error){
     console.error('POST /api/post/delete error:', error.message);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+}
+
+app.delete('/api/post/:id', deletePostHandler);
+app.post('/api/post/delete', deletePostHandler);
 
 // API: save entire state
 app.post('/api/state', (req, res)=>{
@@ -167,6 +175,7 @@ app.use(express.static(__dirname));
 
 // serve izumi.html as root
 app.get('/', (req, res)=>{
+  res.setHeader('Cache-Control', 'no-store');
   res.sendFile(path.join(__dirname, 'izumi.html'));
 });
 

@@ -2235,14 +2235,19 @@
         const isAuthor = (post.authorId && state.user.id && post.authorId === state.user.id) || (!post.authorId && post.author === state.user.name);
         if(!isAuthor) return alert('Sadece kendi gönderini silebilirsin.');
         if(!confirm('Gönderiyi silmek istediğine emin misin?')) return;
-        state.posts.splice(idx, 1);
-        // also remove saved and votes
-        const svIdx = state.saved.indexOf(id);
-        if(svIdx > -1) state.saved.splice(svIdx, 1);
-        if(state.user.votes && state.user.votes[id]) delete state.user.votes[id];
-        saveState();
-        renderPosts();
-        renderProfile();
+        if(!state.user.id || !state.user.pass) return alert('Bu işlem için kayıtlı hesabınızla giriş yapmalısınız.');
+        fetch(`/api/post/${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: state.user.id, username: state.user.name, passwordHash: state.user.pass })
+        }).then(response => {
+            if(!response.ok) throw new Error('Gönderi sunucudan silinemedi.');
+            state.posts.splice(idx, 1);
+            state.saved = (state.saved || []).filter(savedId => savedId !== id);
+            if(state.user.votes && state.user.votes[id]) delete state.user.votes[id];
+            renderPosts();
+            renderProfile();
+        }).catch(error => alert(error.message));
     }
 
     function editPost(id){
