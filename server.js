@@ -78,8 +78,18 @@ function mergeState(current, incoming){
     saved: Array.from(new Set([...(previous.saved || []), ...(next.saved || [])])),
     activeSubs: Array.from(new Set([...(previous.activeSubs || []), ...(next.activeSubs || [])])),
     reports: mergeByKey(previous.reports, next.reports, 'date'),
-    notifications: mergeByKey(previous.notifications, next.notifications, 'id')
+    notifications: normalizeNotifications(mergeByKey(previous.notifications, next.notifications, 'id'))
   };
+}
+
+function normalizeNotifications(notifications){
+  const unique = new Map();
+  (Array.isArray(notifications) ? notifications : []).forEach(item => {
+    const key = [item.username, item.type, Number(item.postId) || 0, item.message].join('|');
+    const previous = unique.get(key);
+    if(!previous || Number(item.createdAt) > Number(previous.createdAt)) unique.set(key, item);
+  });
+  return Array.from(unique.values()).sort((a, b) => Number(b.createdAt) - Number(a.createdAt)).slice(0, 200);
 }
 
 // API: get whole state

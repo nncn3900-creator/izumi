@@ -1228,10 +1228,26 @@
     function addNotification(username, type, message, postId = null){
         if(!username || username === state.user.name) return;
         if(!state.notifications) state.notifications = [];
+        const duplicate = state.notifications.some(item =>
+            item.username === username &&
+            item.type === type &&
+            Number(item.postId) === Number(postId) &&
+            item.message === message
+        );
+        if(duplicate) return;
         state.notifications.unshift({ id: Date.now() + Math.random(), username, type, message, postId, read: false, createdAt: Date.now() });
         state.notifications = state.notifications.slice(0, 200);
-        saveState();
         renderNotificationBadge();
+    }
+
+    function normalizeNotifications(notifications){
+        const unique = new Map();
+        (Array.isArray(notifications) ? notifications : []).forEach(item => {
+            const key = [item.username, item.type, Number(item.postId) || 0, item.message].join('|');
+            const previous = unique.get(key);
+            if(!previous || Number(item.createdAt) > Number(previous.createdAt)) unique.set(key, item);
+        });
+        return Array.from(unique.values()).sort((a, b) => Number(b.createdAt) - Number(a.createdAt)).slice(0, 200);
     }
 
     function renderNotificationBadge(){
@@ -1295,7 +1311,7 @@
             if(Array.isArray(s.saved)) state.saved = Array.from(new Set([...(state.saved || []), ...s.saved]));
             if(Array.isArray(s.activeSubs)) state.activeSubs = Array.from(new Set([...(state.activeSubs || []), ...s.activeSubs]));
             if(Array.isArray(s.reports)) state.reports = mergeRecords(state.reports, s.reports, 'date');
-            if(Array.isArray(s.notifications)) state.notifications = mergeRecords(state.notifications, s.notifications, 'id');
+            if(Array.isArray(s.notifications)) state.notifications = normalizeNotifications(mergeRecords(state.notifications, s.notifications, 'id'));
             state.user = localUser;
             console.log('State loaded from server');
             // also persist locally
@@ -1335,7 +1351,7 @@
             if(Array.isArray(incoming.posts)) state.posts = mergeRecords(state.posts, incoming.posts, 'id').filter(post => !deletedPostIds.has(Number(post.id)));
             if(Array.isArray(incoming.subs)) state.subs = mergeRecords(state.subs, incoming.subs, 'name');
             if(Array.isArray(incoming.users)) state.users = mergeRecords(state.users, incoming.users, 'id');
-            if(Array.isArray(incoming.notifications)) state.notifications = mergeRecords(state.notifications, incoming.notifications, 'id');
+            if(Array.isArray(incoming.notifications)) state.notifications = normalizeNotifications(mergeRecords(state.notifications, incoming.notifications, 'id'));
             renderSubs();
             renderPosts();
             renderProfile();
@@ -2214,6 +2230,9 @@
 
         const post = state.posts.find(p => p.id === id);
         if(!post) return;
+        const voteChange = change === 1 || change === -1 ? change : 0;
+        if(!voteChange) return;
+        post.votes = Number.isFinite(Number(post.votes)) ? Number(post.votes) : 0;
 
         // prevent self-voting
         if(post.author === state.user.name) return alert('Kendi gönderine oy veremezsin.');
@@ -2223,27 +2242,27 @@
         if(state.user && state.user.name === post.author) authorUser = state.user;
         else authorUser = (state.users || []).find(u=>u.name === post.author);
 
-        const existing = state.user.votes[id] || 0;
-        if(existing === change) {
+        const existing = Number(state.user.votes[id]) || 0;
+        if(existing === voteChange) {
             // undo
-            post.votes -= change;
+            post.votes -= voteChange;
             delete state.user.votes[id];
-            if(authorUser) authorUser.karma -= change;
+            if(authorUser) authorUser.karma = (Number(authorUser.karma) || 0) - voteChange;
         } else if(existing === 0) {
             // new vote
-            post.votes += change;
-            state.user.votes[id] = change;
-            if(authorUser) authorUser.karma += change;
+            post.votes += voteChange;
+            state.user.votes[id] = voteChange;
+            if(authorUser) authorUser.karma = (Number(authorUser.karma) || 0) + voteChange;
         } else {
             // switch vote
             post.votes -= existing;
-            post.votes += change;
-            state.user.votes[id] = change;
-            if(authorUser) authorUser.karma += (change - existing);
+            post.votes += voteChange;
+            state.user.votes[id] = voteChange;
+            if(authorUser) authorUser.karma = (Number(authorUser.karma) || 0) + (voteChange - existing);
         }
 
+        addNotification(post.author, 'vote', `${state.user.name}, "${post.title}" postuna oy verdi.`, post.id);
         saveState();
-        if(change !== 0) addNotification(post.author, 'vote', `${state.user.name}, "${post.title}" postuna oy verdi.`, post.id);
         renderPosts();
         renderProfile();
     }
