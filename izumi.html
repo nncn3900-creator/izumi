@@ -6,7 +6,7 @@
     <title>izanai - Anonim & Özgür Akış</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Cpath d='M50 15v70M29 25v23l21 13 21-13V25M29 48l-11-8M71 48l11-8M34 72h32' fill='none' stroke='%23ffffff' stroke-width='8' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/style.css">
     <style>
         /* === IZANAI PURE DARK THEME === */
         :root {
@@ -655,22 +655,37 @@
         }
 
         @media (max-width: 900px) {
-            .app-container { grid-template-columns: 190px 1fr; }
+            .app-container { grid-template-columns: 190px minmax(0, 1fr); }
             .sidebar-right { display: none; }
         }
 
         @media (max-width: 640px) {
-            .app-container { display: block; padding: 12px; }
-            .sidebar-left { position: static; margin-bottom: 14px; }
-            .sidebar-left > .nav-link, .sidebar-left > .btn-primary, .sidebar-left > div:not(.brand) { display: none; }
-            .sidebar-left .brand { padding-left: 0; }
-            .main-feed { gap: 12px; }
+            body { overflow-x: hidden; }
+            .app-container { display: block; width: 100%; padding: 10px; overflow-x: hidden; }
+            .sidebar-left { position: static; width: 100%; gap: 8px; margin-bottom: 12px; overflow-x: auto; }
+            .sidebar-left .brand { padding: 6px 0; }
+            .sidebar-left > div:not(.brand) { display: none; }
+            .sidebar-left > .nav-link { display: flex; flex: 0 0 auto; width: max-content; padding: 8px 10px; font-size: 0.82rem; }
+            .sidebar-left > .btn-primary { display: flex; width: 100%; }
+            .sidebar-left > .nav-link:first-of-type { margin-left: 0; }
+            .main-feed { width: 100%; min-width: 0; gap: 12px; }
             .feed-header { align-items: flex-start; gap: 10px; flex-direction: column; }
             .feed-controls, .feed-controls .select-field { width: 100%; }
-            .post-card { padding: 12px; gap: 8px; }
+            .feed-tabs { width: 100%; padding-bottom: 4px; }
+            .post-card { display: grid; grid-template-columns: 28px minmax(0, 1fr); width: 100%; min-width: 0; padding: 12px; gap: 8px; }
+            .post-content { width: 100%; min-width: 0; }
+            .post-meta, .author-line { flex-wrap: wrap; min-width: 0; }
+            .post-title, .post-body { overflow-wrap: anywhere; word-break: break-word; }
             .vote-box { min-width: 28px; }
-            .post-actions { flex-wrap: wrap; gap: 10px; }
-            .modal { width: calc(100% - 24px); max-height: 92vh; overflow-y: auto; }
+            .post-actions { flex-wrap: wrap; gap: 8px 12px; }
+            .action-btn { min-height: 28px; white-space: nowrap; }
+            .post-image, .post-image video, video.post-image, .post-image img, img.post-image { max-width: 100%; max-height: 58vh; }
+            .inline-comment-form { flex-direction: column; width: 100%; }
+            .inline-comment-form .textarea-field, .inline-comment-form button { width: 100%; }
+            .modal-overlay { align-items: flex-start; padding: 12px; overflow-y: auto; }
+            .modal { width: 100%; max-height: calc(100vh - 24px); overflow-y: auto; padding: 16px; }
+            .modal-header { gap: 12px; }
+            .modal-header > span { min-width: 0; overflow-wrap: anywhere; }
         }
     </style>
 </head>
@@ -2563,6 +2578,6 @@
     })();
     
 </script>
-<script src="app.js"></script>
+<script src="assets/app.js"></script>
 </body>
 </html>

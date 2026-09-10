@@ -37,59 +37,64 @@ setTimeout(()=>{
 // --- File uploads (post media and profile avatar) ---
 function fileToDataUrl(file, cb){
     const reader = new FileReader();
-    reader.onload = () => cb(reader.result);
+    reader.onload = () => cb(null, reader.result);
+    reader.onerror = () => cb(new Error('Dosya okunamadı.'));
     reader.readAsDataURL(file);
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-    const postFile = document.getElementById('post-file');
-    if(postFile){
-        postFile.addEventListener('change', (ev)=>{
-            const f = ev.target.files && ev.target.files[0];
-            if(!f) return;
-            const t = f.type || '';
-            fileToDataUrl(f, (data)=>{
-                const type = t.startsWith('video') ? t : 'image';
-                document.getElementById('post-media-type').value = type;
-                document.getElementById('post-media-src').value = data;
-                const preview = document.getElementById('post-media-preview');
-                preview.innerHTML = '';
-                if(type === 'image'){
-                    const img = document.createElement('img'); img.src = data; img.className = 'post-image'; preview.appendChild(img);
-                } else {
-                    const vid = document.createElement('video'); vid.src = data; vid.controls = true; vid.className = 'post-image'; preview.appendChild(vid);
-                }
-            });
+function bindMediaInput(inputId, typeId, sourceId, previewId){
+    const input = document.getElementById(inputId);
+    if(!input) return;
+    input.addEventListener('change', (event)=>{
+        const file = event.target.files && event.target.files[0];
+        if(!file) return;
+        if(file.size > 5 * 1024 * 1024){
+            input.value = '';
+            alert('Dosya boyutu en fazla 5 MB olabilir.');
+            return;
+        }
+        fileToDataUrl(file, (error, data)=>{
+            if(error){
+                input.value = '';
+                alert(error.message);
+                return;
+            }
+            const type = file.type.startsWith('video') ? file.type : 'image';
+            document.getElementById(typeId).value = type;
+            document.getElementById(sourceId).value = data;
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = '';
+            if(type === 'image'){
+                const image = document.createElement('img');
+                image.src = data;
+                image.className = 'post-image';
+                image.alt = 'Görsel önizleme';
+                preview.appendChild(image);
+            } else {
+                const video = document.createElement('video');
+                video.src = data;
+                video.controls = true;
+                video.className = 'post-image';
+                preview.appendChild(video);
+            }
         });
-    }
+    });
+}
 
-    const commentFile = document.getElementById('comment-file');
-    if(commentFile){
-        commentFile.addEventListener('change', (ev)=>{
-            const f = ev.target.files && ev.target.files[0];
-            if(!f) return;
-            const t = f.type || '';
-            fileToDataUrl(f, (data)=>{
-                const type = t.startsWith('video') ? t : 'image';
-                document.getElementById('comment-media-type').value = type;
-                document.getElementById('comment-media-src').value = data;
-                const preview = document.getElementById('comment-media-preview');
-                preview.innerHTML = '';
-                if(type === 'image'){
-                    const img = document.createElement('img'); img.src = data; img.className = 'post-image'; preview.appendChild(img);
-                } else {
-                    const vid = document.createElement('video'); vid.src = data; vid.controls = true; vid.className = 'post-image'; preview.appendChild(vid);
-                }
-            });
-        });
-    }
+document.addEventListener('DOMContentLoaded', ()=>{
+    bindMediaInput('post-file', 'post-media-type', 'post-media-src', 'post-media-preview');
+    bindMediaInput('comment-file', 'comment-media-type', 'comment-media-src', 'comment-media-preview');
 
     const avatarInput = document.getElementById('profile-avatar-input');
     if(avatarInput){
         avatarInput.addEventListener('change', (ev)=>{
             const f = ev.target.files && ev.target.files[0];
             if(!f) return;
-            fileToDataUrl(f, (data)=>{
+            fileToDataUrl(f, (error, data)=>{
+                if(error){
+                    alert(error.message);
+                    return;
+                }
                 // save to state global
                 if(window.state && window.state.user){
                     window.state.user.avatar = data;
