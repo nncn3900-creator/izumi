@@ -64,11 +64,13 @@ function mergeByKey(existing, incoming, key){
 function mergeState(current, incoming){
   const previous = current || {};
   const next = incoming || {};
+  const deletedPostIds = Array.from(new Set([...(previous.deletedPostIds || []), ...(next.deletedPostIds || [])]));
   return {
     ...previous,
     ...next,
     users: mergeByKey(previous.users, next.users, 'id'),
-    posts: mergeByKey(previous.posts, next.posts, 'id'),
+    posts: mergeByKey(previous.posts, next.posts, 'id').filter(post => !deletedPostIds.includes(post.id)),
+    deletedPostIds,
     subs: mergeByKey(previous.subs, next.subs, 'name'),
     saved: Array.from(new Set([...(previous.saved || []), ...(next.saved || [])])),
     activeSubs: Array.from(new Set([...(previous.activeSubs || []), ...(next.activeSubs || [])])),
@@ -85,6 +87,33 @@ app.get('/api/state', (req, res)=>{
   }catch(e){
     console.error('GET /api/state error:', e.message);
     res.status(500).json({ error: 'Internal server error', message: e.message });
+  }
+});
+
+app.post('/api/post/delete', (req, res)=>{
+  try{
+    const { postId, userId, username, passwordHash } = req.body || {};
+    if(!postId || !userId || !passwordHash) return res.status(400).json({ error: 'missing_credentials' });
+    const db = readDB();
+    const current = db.state || {};
+    const user = (current.users || []).find(item => item.id === userId && item.pass === passwordHash && (!username || item.name === username));
+    if(!user) return res.status(403).json({ error: 'invalid_user' });
+    const post = (current.posts || []).find(item => item.id === postId);
+    if(!post) return res.status(404).json({ error: 'post_not_found' });
+    if(post.authorId !== user.id && post.author !== user.name) return res.status(403).json({ error: 'not_post_author' });
+    const deletedPostIds = Array.from(new Set([...(current.deletedPostIds || []), postId]));
+    const nextState = {
+      ...current,
+      deletedPostIds,
+      posts: (current.posts || []).filter(item => item.id !== postId),
+      saved: (current.saved || []).filter(id => id !== postId),
+      reports: (current.reports || []).filter(report => report.postId !== postId)
+    };
+    if(!writeDB({ state: nextState, updatedAt: Date.now() })) return res.status(500).json({ error: 'write_failed' });
+    res.json({ ok: true });
+  }catch(error){
+    console.error('POST /api/post/delete error:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
