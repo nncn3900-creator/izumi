@@ -2428,7 +2428,10 @@
             const canEdit = comment.author === state.user.name;
             const replyOpen = activeReplyPostId === Number(post.id) && activeReplyCommentId === String(commentId);
             const children = getCommentChildren(post, commentId).map(child => renderCommentNode(child, depth + 1)).join('');
-            return `<div class="comment-card" style="margin-left:${depth * 18}px; ${depth > 0 ? 'border-left:2px solid var(--border-color); padding-left:10px;' : ''}">
+            const replyClass = depth > 0 ? ' comment-reply' : '';
+            const replyLabel = depth > 0 ? `<div class="reply-context"><i class="fa-solid fa-reply"></i> Yanıt</div>` : '';
+            return `<div class="comment-card${replyClass}" data-comment-depth="${Math.min(depth, 1)}">
+                ${replyLabel}
                 <div class="comment-meta">
                     <span class="author-line"><span class="comment-author-link" data-username="${escapeHtml(comment.author)}" style="cursor:pointer;">${getAuthorAvatarHtml(comment.author)}</span><b class="comment-author-link" data-username="${escapeHtml(comment.author)}" style="cursor:pointer; color:var(--accent);">${escapeHtml(comment.author)}</b></span>
                     • ${escapeHtml(comment.date)} ${comment.edited ? '<span>(düzenlendi)</span>' : ''}
@@ -2450,7 +2453,7 @@
                         <button class="btn-secondary" onclick="event.stopPropagation(); cancelReply()">İptal</button>
                     </div>
                 </div>` : ''}
-                ${children}
+                ${children ? `<div class="comment-replies">${children}</div>` : ''}
             </div>`;
         };
 

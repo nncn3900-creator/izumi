@@ -146,6 +146,38 @@ body{background:var(--theme-page); color:var(--theme-text);}
     overflow:hidden;
 }
 
+.comment-replies{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:4px;
+    padding-left:12px;
+    border-left:2px solid var(--accent-subtle);
+}
+
+.comment-reply{
+    margin-left:0;
+    position:relative;
+}
+
+.comment-reply .comment-replies{
+    padding-left:0;
+    border-left:0;
+}
+
+.comment-replies .comment-replies{
+    margin-top:0;
+}
+
+.reply-context{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    color:var(--text-muted);
+    font-size:.72rem;
+    margin-bottom:2px;
+}
+
 .comment-card .comment-media,
 .comment-card .comment-image,
 .comment-card video,
