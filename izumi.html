@@ -852,8 +852,8 @@
             </div>
             <input class="input-field" id="prop-sub-name" placeholder="Sub adı" readonly />
             <textarea class="textarea-field" id="prop-sub-desc" placeholder="Açıklama"></textarea>
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <div id="prop-sub-avatar-preview" class="avatar" style="width:56px; height:56px; flex:0 0 56px; overflow:hidden;">#</div>
+            <div id="prop-sub-avatar-controls" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div id="prop-sub-avatar-preview" class="avatar" style="width:84px; height:84px; flex:0 0 84px; overflow:hidden;">#</div>
                 <div style="flex:1; min-width:180px;">
                     <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:5px;">Sub profil fotoğrafı</label>
                     <input type="file" id="prop-sub-avatar-file" accept="image/*">
@@ -887,6 +887,7 @@
                 <input class="input-field" id="prop-transfer-owner" placeholder="Yeni sahip rumuzu" />
                 <button class="btn-secondary" onclick="transferOwnerFromModal()" data-i18n="transferOwnership">Sahipliği Devret</button>
             </div>
+            <button class="btn-danger" style="margin-top:10px; width:100%;" onclick="deleteSubFromProperties()"><i class="fa-solid fa-trash"></i> Subu Sil</button>
             </div>
             <div style="margin-top:12px; text-align:right; display:flex; gap:8px; justify-content:flex-end;"><button class="btn-secondary" onclick="closeModal('modal-sub-props')">İptal</button><button class="btn-primary" id="prop-save-btn" onclick="saveSubProperties()">Kaydet</button></div>
         </div>
@@ -1682,7 +1683,6 @@
                     <div style="display:flex; gap:6px; align-items:center">
                         <button class="btn-secondary" onclick="toggleSubscribe('${s.name}')">${isSub ? t('leave') : t('subscribe')}</button>
                         ${canManage ? `<button class="btn-secondary" title="Sub özellikleri" onclick="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-gear"></i></button>` : ''}
-                        ${allowedToDelete ? `<button class="btn-danger" onclick="deleteSub('${s.name}')">Sil</button>` : ''}
                     </div>
                 </div>
             `;
@@ -1795,6 +1795,7 @@
         const canManage = isOwner || isAdmin;
         const ownerControls = document.getElementById('prop-owner-controls');
         const managerControls = document.getElementById('prop-manager-controls');
+        const avatarControls = document.getElementById('prop-sub-avatar-controls');
         const descEl = document.getElementById('prop-sub-desc');
         const avatarInput = document.getElementById('prop-sub-avatar-file');
         const saveBtn = document.getElementById('prop-save-btn');
@@ -1802,12 +1803,14 @@
             // non-owners can only view: make desc readonly and hide owner controls
             if(ownerControls) ownerControls.style.display = 'none';
             if(managerControls) managerControls.style.display = 'none';
+            if(avatarControls) avatarControls.style.display = 'none';
             if(descEl) { descEl.readOnly = true; descEl.style.background = 'var(--muted-bg)'; }
             if(avatarInput) avatarInput.disabled = true;
             if(saveBtn) saveBtn.style.display = 'none';
         } else {
             if(ownerControls) ownerControls.style.display = isOwner ? 'block' : 'none';
             if(managerControls) managerControls.style.display = isOwner ? 'block' : 'none';
+            if(avatarControls) avatarControls.style.display = 'flex';
             if(descEl) { descEl.readOnly = false; descEl.style.background = ''; }
             if(avatarInput) avatarInput.disabled = false;
             if(saveBtn) saveBtn.style.display = 'inline-block';
@@ -1826,7 +1829,7 @@
         }
         sub.desc = document.getElementById('prop-sub-desc').value || '';
         const avatarSrc = document.getElementById('prop-sub-avatar-src').value;
-        if(avatarSrc) sub.avatar = avatarSrc;
+        sub.avatar = avatarSrc || sub.avatar || '';
         if(currentUserIsOwner){
             const admins = document.getElementById('prop-sub-admins').value.split(',').map(name => name.trim()).filter(Boolean);
             const registeredNames = new Set((state.users || []).map(user => user.name));
@@ -1838,6 +1841,14 @@
         }
         saveState(); renderSubs(); renderProfile(); closeModal('modal-sub-props');
         alert('Sub özellikleri kaydedildi.');
+    }
+
+    function deleteSubFromProperties(){
+        const name = document.getElementById('prop-sub-name').value;
+        const sub = state.subs.find(item => item.name === name);
+        if(!sub || sub.owner !== state.user.name) return alert('Sadece sub kurucusu subu silebilir.');
+        closeModal('modal-sub-props');
+        deleteSub(name);
     }
 
     function transferOwnerFromModal(){
