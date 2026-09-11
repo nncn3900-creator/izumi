@@ -68,24 +68,74 @@ function bindMediaInput(inputId, typeId, sourceId, previewId){
                 return;
             }
             const type = isVideo ? file.type : 'image';
-            document.getElementById(typeId).value = type;
-            document.getElementById(sourceId).value = data;
+            const targetType = document.getElementById(typeId);
+            const targetSource = document.getElementById(sourceId);
+            if(targetType) targetType.value = type;
+            if(targetSource) targetSource.value = data;
             const preview = document.getElementById(previewId);
+            if(!preview) return;
             preview.innerHTML = '';
+            const previewClass = previewId.includes('comment') ? 'comment-image' : 'post-image';
             if(type === 'image'){
                 const image = document.createElement('img');
                 image.src = data;
-                image.className = 'post-image';
+                image.className = previewClass;
                 image.alt = 'Görsel önizleme';
                 preview.appendChild(image);
             } else {
                 const video = document.createElement('video');
                 video.src = data;
                 video.controls = true;
-                video.className = 'post-image';
+                video.className = previewClass;
                 preview.appendChild(video);
             }
         });
+    });
+}
+
+function handleCommentMediaInput(input, typeId, sourceId, previewId){
+    const file = input.files && input.files[0];
+    if(!file) return;
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    if(!isImage && !isVideo){
+        input.value = '';
+        alert('Yalnızca görsel veya video dosyası yükleyebilirsiniz.');
+        return;
+    }
+    const maxSize = isVideo ? 12 * 1024 * 1024 : 5 * 1024 * 1024;
+    if(file.size > maxSize){
+        input.value = '';
+        alert(isVideo ? 'Video boyutu en fazla 12 MB olabilir.' : 'Görsel boyutu en fazla 5 MB olabilir.');
+        return;
+    }
+    fileToDataUrl(file, (error, data)=>{
+        if(error){
+            input.value = '';
+            alert(error.message);
+            return;
+        }
+        const targetType = document.getElementById(typeId);
+        const targetSource = document.getElementById(sourceId);
+        const preview = document.getElementById(previewId);
+        if(targetType) targetType.value = isVideo ? file.type : 'image';
+        if(targetSource) targetSource.value = data;
+        if(!preview) return;
+        preview.innerHTML = '';
+        const previewClass = previewId.includes('comment') ? 'comment-image' : 'post-image';
+        if(isImage){
+            const image = document.createElement('img');
+            image.src = data;
+            image.className = previewClass;
+            image.alt = 'Yorum görseli';
+            preview.appendChild(image);
+        } else {
+            const video = document.createElement('video');
+            video.src = data;
+            video.controls = true;
+            video.className = previewClass;
+            preview.appendChild(video);
+        }
     });
 }
 
