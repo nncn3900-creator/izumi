@@ -884,9 +884,10 @@
                 <select class="select-field" id="prop-sub-commentperm"><option value="author">Yazar</option><option value="owner">Sahip</option><option value="anyone">Herkes</option></select>
             </div>
             <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-                <select class="select-field" id="prop-transfer-owner">
-                    <option value="">Yeni sahip seçin</option>
-                </select>
+                <div style="flex:1; position:relative;">
+                    <input class="input-field" id="prop-transfer-owner" placeholder="Kullanıcı adı yazın" autocomplete="off" oninput="searchTransferOwner(this.value)">
+                    <div id="prop-transfer-owner-results" class="search-results" style="position:absolute; z-index:5; width:100%; max-height:180px; overflow:auto;"></div>
+                </div>
                 <button class="btn-secondary" onclick="transferOwnerFromModal()" data-i18n="transferOwnership">Sahipliği Devret</button>
             </div>
             <div style="font-size:0.78rem; color:var(--danger); margin-top:5px;">Uyarı: Devirden sonra mevcut kurucu sub üzerindeki tüm yönetim yetkilerini kaybeder.</div>
@@ -1789,14 +1790,11 @@
         if(uploadPreview) uploadPreview.innerHTML = '';
         document.getElementById('prop-sub-deleteperm').value = sub.deletePermission || 'owner';
         document.getElementById('prop-sub-commentperm').value = sub.commentDeletePermission || 'author';
-        const transferSelect = document.getElementById('prop-transfer-owner');
-        transferSelect.innerHTML = '<option value="">Yeni sahip seçin</option>';
-        (state.users || []).filter(user => user.name !== sub.owner).forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.name;
-            option.textContent = user.name;
-            transferSelect.appendChild(option);
-        });
+        const transferInput = document.getElementById('prop-transfer-owner');
+        transferInput.value = '';
+        transferInput.dataset.selectedName = '';
+        const transferResults = document.getElementById('prop-transfer-owner-results');
+        if(transferResults) transferResults.innerHTML = '';
         // stats: participants and active posts
         const participants = (state.users || []).filter(u => (u.subscriptions || []).includes(subName)).length;
         const activePosts = (state.posts || []).filter(p => p.sub === subName).length;
@@ -1865,13 +1863,37 @@
 
     function transferOwnerFromModal(){
         const subName = document.getElementById('prop-sub-name').value;
-        const newOwner = document.getElementById('prop-transfer-owner').value;
-        if(!newOwner) return alert('Kayıtlı yeni sahip seçin');
+        const transferInput = document.getElementById('prop-transfer-owner');
+        const newOwner = transferInput.dataset.selectedName || '';
+        if(!newOwner) return alert('Listeden kayıtlı bir kullanıcı seçin');
         const sub = state.subs.find(item => item.name === subName);
         if(!sub || sub.owner !== state.user.name) return alert('Sadece sub kurucusu sahipliği devredebilir.');
         if(!confirm(`i/${subName} sahipliği ${newOwner} kişisine devredilecek. Mevcut kurucu olarak sub üzerindeki tüm yönetim yetkilerinizi kaybedeceksiniz. Devam edilsin mi?`)) return;
         transferOwnership(subName, newOwner);
         closeModal('modal-sub-props');
+    }
+
+    function searchTransferOwner(query){
+        const input = document.getElementById('prop-transfer-owner');
+        const results = document.getElementById('prop-transfer-owner-results');
+        if(!input || !results) return;
+        input.dataset.selectedName = '';
+        const normalizedQuery = String(query || '').trim().toLowerCase();
+        if(!normalizedQuery){ results.innerHTML = ''; results.style.display = 'none'; return; }
+        const sub = state.subs.find(item => item.name === document.getElementById('prop-sub-name').value);
+        const currentOwner = sub ? sub.owner : '';
+        const matches = (state.users || []).filter(user => user.name !== currentOwner && String(user.name).toLowerCase().includes(normalizedQuery)).slice(0, 8);
+        results.innerHTML = matches.length ? matches.map(user => `<button type="button" class="search-result-item" style="width:100%; text-align:left; background:transparent; border:0;" onclick="selectTransferOwner('${escapeHtml(user.name)}')">${escapeHtml(user.name)}</button>`).join('') : '<div style="padding:8px; color:var(--text-muted);">Kayıtlı kullanıcı bulunamadı.</div>';
+        results.style.display = 'block';
+    }
+
+    function selectTransferOwner(username){
+        const input = document.getElementById('prop-transfer-owner');
+        const results = document.getElementById('prop-transfer-owner-results');
+        if(!input) return;
+        input.value = username;
+        input.dataset.selectedName = username;
+        if(results){ results.innerHTML = ''; results.style.display = 'none'; }
     }
 
     function profileAvatarChanged(input){
