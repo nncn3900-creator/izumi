@@ -1947,34 +1947,20 @@
             canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
             context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-            const padding = Math.max(12, Math.round(canvas.width * 0.018));
-            const logoSize = Math.max(18, Math.round(canvas.width * 0.035));
-            const bandHeight = logoSize + padding * 2;
-            const bandTop = canvas.height - bandHeight;
-            context.fillStyle = 'rgba(0, 0, 0, 0.72)';
-            context.fillRect(0, bandTop, canvas.width, bandHeight);
-
-            const logoX = padding;
-            const logoY = bandTop + Math.round((bandHeight - logoSize) / 2);
-            context.strokeStyle = '#ffffff';
-            context.lineWidth = Math.max(2, Math.round(logoSize * 0.12));
-            context.lineCap = 'square';
-            context.beginPath();
-            context.moveTo(logoX + logoSize / 2, logoY + logoSize * 0.08);
-            context.lineTo(logoX + logoSize / 2, logoY + logoSize * 0.92);
-            context.moveTo(logoX + logoSize * 0.28, logoY + logoSize * 0.2);
-            context.lineTo(logoX + logoSize / 2, logoY + logoSize * 0.48);
-            context.lineTo(logoX + logoSize * 0.72, logoY + logoSize * 0.2);
-            context.moveTo(logoX + logoSize * 0.28, logoY + logoSize * 0.2);
-            context.lineTo(logoX + logoSize * 0.12, logoY + logoSize * 0.1);
-            context.moveTo(logoX + logoSize * 0.72, logoY + logoSize * 0.2);
-            context.lineTo(logoX + logoSize * 0.88, logoY + logoSize * 0.1);
-            context.stroke();
-
+            const padding = Math.max(8, Math.round(canvas.width * 0.012));
+            const fontSize = Math.max(12, Math.round(canvas.width * 0.018));
+            context.font = `600 ${fontSize}px sans-serif`;
+            const label = 'izanai.onrender.com';
+            const labelWidth = context.measureText(label).width;
+            const boxWidth = labelWidth + padding * 2;
+            const boxHeight = fontSize + padding * 1.5;
+            const boxX = canvas.width - boxWidth - padding;
+            const boxY = canvas.height - boxHeight - padding;
+            context.fillStyle = '#000000';
+            context.fillRect(boxX, boxY, boxWidth, boxHeight);
             context.fillStyle = '#ffffff';
-            context.font = `600 ${Math.max(14, Math.round(logoSize * 0.7))}px sans-serif`;
             context.textBaseline = 'middle';
-            context.fillText('izanai', logoX + logoSize + padding, bandTop + bandHeight / 2);
+            context.fillText(label, boxX + padding, boxY + boxHeight / 2);
 
             canvas.toBlob(blob => {
                 if(!blob) return alert('Fotoğraf indirilemedi.');
@@ -2056,7 +2042,7 @@
                 if(p.media.type && p.media.type.startsWith('video')){
                     mediaHtml = mediaSource ? `<video class="post-image" controls onclick="event.stopPropagation(); revealNsfwMedia(this.parentElement)" src="${mediaSource}"></video>` : '';
                 } else {
-                    mediaHtml = mediaSource ? `<img src="${mediaSource}" class="post-image" onclick="event.stopPropagation()" alt="Post Image"><button class="btn-secondary" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); downloadWatermarkedImage(${p.id})"><i class="fa-solid fa-download"></i> Fotoğrafı İndir</button>` : '';
+                    mediaHtml = mediaSource ? `<img src="${mediaSource}" class="post-image" onclick="event.stopPropagation()" alt="Post Image">` : '';
                 }
             }
             mediaHtml = protectNsfwMedia(mediaHtml, p.isNsfw);
@@ -2102,6 +2088,7 @@
                             <button class="action-btn" onclick="event.stopPropagation(); reportPost(${p.id})"><i class="fa-solid fa-flag"></i> ${t('report')}</button>
                             ${((p.authorId && state.user.id && p.authorId === state.user.id) || (!p.authorId && p.author === state.user.name)) ? `<button class="action-btn" onclick="event.stopPropagation(); deletePost(${p.id})"><i class="fa-solid fa-trash"></i> ${t('delete')}</button>` : ''}
                             ${((p.authorId && state.user.id && p.authorId === state.user.id) || (!p.authorId && p.author === state.user.name)) ? `<button class="action-btn" onclick="event.stopPropagation(); editPost(${p.id})"><i class="fa-solid fa-pen"></i> ${t('edit')}</button>` : ''}
+                            ${(p.media && p.media.src && !(p.media.type && p.media.type.startsWith('video'))) ? `<button class="action-btn" title="Fotoğrafı indir" onclick="event.stopPropagation(); downloadWatermarkedImage(${p.id})"><i class="fa-solid fa-download"></i> İndir</button>` : ''}
                         </div>
                         ${expandedCommentsHtml}
                     </div>
