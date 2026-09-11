@@ -884,9 +884,12 @@
                 <select class="select-field" id="prop-sub-commentperm"><option value="author">Yazar</option><option value="owner">Sahip</option><option value="anyone">Herkes</option></select>
             </div>
             <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-                <input class="input-field" id="prop-transfer-owner" placeholder="Yeni sahip rumuzu" />
+                <select class="select-field" id="prop-transfer-owner">
+                    <option value="">Yeni sahip seçin</option>
+                </select>
                 <button class="btn-secondary" onclick="transferOwnerFromModal()" data-i18n="transferOwnership">Sahipliği Devret</button>
             </div>
+            <div style="font-size:0.78rem; color:var(--danger); margin-top:5px;">Uyarı: Devirden sonra mevcut kurucu sub üzerindeki tüm yönetim yetkilerini kaybeder.</div>
             <button class="btn-danger" style="margin-top:10px; width:100%;" onclick="deleteSubFromProperties()"><i class="fa-solid fa-trash"></i> Subu Sil</button>
             </div>
             <div style="margin-top:12px; text-align:right; display:flex; gap:8px; justify-content:flex-end;"><button class="btn-secondary" onclick="closeModal('modal-sub-props')">İptal</button><button class="btn-primary" id="prop-save-btn" onclick="saveSubProperties()">Kaydet</button></div>
@@ -1737,7 +1740,9 @@
         if(!sub) return alert('Sub bulunamadı');
         if(!(sub.owner && state.user && state.user.name && sub.owner === state.user.name)) return alert('Sadece sub sahibi transfer edebilir.');
         if(!state.users.some(u=>u.name===newOwner)) return alert('Yeni sahip bulunamadı');
+        const previousOwner = sub.owner;
         sub.owner = newOwner;
+        sub.admins = (sub.admins || []).filter(name => name !== previousOwner && name !== newOwner);
         saveState();
         renderSubs();
         renderProfile();
@@ -1784,7 +1789,14 @@
         if(uploadPreview) uploadPreview.innerHTML = '';
         document.getElementById('prop-sub-deleteperm').value = sub.deletePermission || 'owner';
         document.getElementById('prop-sub-commentperm').value = sub.commentDeletePermission || 'author';
-        document.getElementById('prop-transfer-owner').value = '';
+        const transferSelect = document.getElementById('prop-transfer-owner');
+        transferSelect.innerHTML = '<option value="">Yeni sahip seçin</option>';
+        (state.users || []).filter(user => user.name !== sub.owner).forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.name;
+            option.textContent = user.name;
+            transferSelect.appendChild(option);
+        });
         // stats: participants and active posts
         const participants = (state.users || []).filter(u => (u.subscriptions || []).includes(subName)).length;
         const activePosts = (state.posts || []).filter(p => p.sub === subName).length;
@@ -1853,8 +1865,11 @@
 
     function transferOwnerFromModal(){
         const subName = document.getElementById('prop-sub-name').value;
-        const newOwner = document.getElementById('prop-transfer-owner').value.trim();
-        if(!newOwner) return alert('Yeni sahip rumuzunu girin');
+        const newOwner = document.getElementById('prop-transfer-owner').value;
+        if(!newOwner) return alert('Kayıtlı yeni sahip seçin');
+        const sub = state.subs.find(item => item.name === subName);
+        if(!sub || sub.owner !== state.user.name) return alert('Sadece sub kurucusu sahipliği devredebilir.');
+        if(!confirm(`i/${subName} sahipliği ${newOwner} kişisine devredilecek. Mevcut kurucu olarak sub üzerindeki tüm yönetim yetkilerinizi kaybedeceksiniz. Devam edilsin mi?`)) return;
         transferOwnership(subName, newOwner);
         closeModal('modal-sub-props');
     }
