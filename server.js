@@ -61,6 +61,21 @@ function mergeByKey(existing, incoming, key){
   return merged;
 }
 
+function normalizeSubName(value){
+  return String(value || '').trim().toLowerCase().replace(/\s+/g, '');
+}
+
+function normalizeSubs(subs){
+  const unique = new Map();
+  (Array.isArray(subs) ? subs : []).forEach(sub => {
+    if(!sub) return;
+    const name = normalizeSubName(sub.name);
+    if(!name || unique.has(name)) return;
+    unique.set(name, { ...sub, name });
+  });
+  return Array.from(unique.values());
+}
+
 function mergeState(current, incoming){
   const previous = current || {};
   const next = incoming || {};
@@ -74,7 +89,7 @@ function mergeState(current, incoming){
     users: mergeByKey(previous.users, next.users, 'id'),
     posts: mergeByKey(previous.posts, next.posts, 'id').filter(post => !deletedPostIds.includes(post.id)),
     deletedPostIds,
-    subs: mergeByKey(previous.subs, next.subs, 'name'),
+    subs: normalizeSubs(mergeByKey(previous.subs, next.subs, 'name')),
     saved: Array.from(new Set([...(previous.saved || []), ...(next.saved || [])])),
     activeSubs: Array.from(new Set([...(previous.activeSubs || []), ...(next.activeSubs || [])])),
     reports: mergeByKey(previous.reports, next.reports, 'date'),

@@ -92,6 +92,7 @@ function bindMediaInput(inputId, typeId, sourceId, previewId){
 document.addEventListener('DOMContentLoaded', ()=>{
     bindMediaInput('post-file', 'post-media-type', 'post-media-src', 'post-media-preview');
     bindMediaInput('comment-file', 'comment-media-type', 'comment-media-src', 'comment-media-preview');
+    bindMediaInput('prop-sub-avatar-file', 'prop-sub-avatar-type', 'prop-sub-avatar-src', 'prop-sub-avatar-upload-preview');
 
     const avatarInput = document.getElementById('profile-avatar-input');
     if(avatarInput){
