@@ -1933,6 +1933,62 @@
         if(element) element.classList.add('is-revealed');
     }
 
+    function downloadWatermarkedImage(postId){
+        const post = state.posts.find(item => Number(item.id) === Number(postId));
+        if(!post || !post.media || !post.media.src || (post.media.type && post.media.type.startsWith('video'))) return;
+
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+        image.onload = () => {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            const scale = Math.min(1, 2400 / image.naturalWidth);
+            canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+            canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            const padding = Math.max(12, Math.round(canvas.width * 0.018));
+            const logoSize = Math.max(18, Math.round(canvas.width * 0.035));
+            const bandHeight = logoSize + padding * 2;
+            const bandTop = canvas.height - bandHeight;
+            context.fillStyle = 'rgba(0, 0, 0, 0.72)';
+            context.fillRect(0, bandTop, canvas.width, bandHeight);
+
+            const logoX = padding;
+            const logoY = bandTop + Math.round((bandHeight - logoSize) / 2);
+            context.strokeStyle = '#ffffff';
+            context.lineWidth = Math.max(2, Math.round(logoSize * 0.12));
+            context.lineCap = 'square';
+            context.beginPath();
+            context.moveTo(logoX + logoSize / 2, logoY + logoSize * 0.08);
+            context.lineTo(logoX + logoSize / 2, logoY + logoSize * 0.92);
+            context.moveTo(logoX + logoSize * 0.28, logoY + logoSize * 0.2);
+            context.lineTo(logoX + logoSize / 2, logoY + logoSize * 0.48);
+            context.lineTo(logoX + logoSize * 0.72, logoY + logoSize * 0.2);
+            context.moveTo(logoX + logoSize * 0.28, logoY + logoSize * 0.2);
+            context.lineTo(logoX + logoSize * 0.12, logoY + logoSize * 0.1);
+            context.moveTo(logoX + logoSize * 0.72, logoY + logoSize * 0.2);
+            context.lineTo(logoX + logoSize * 0.88, logoY + logoSize * 0.1);
+            context.stroke();
+
+            context.fillStyle = '#ffffff';
+            context.font = `600 ${Math.max(14, Math.round(logoSize * 0.7))}px sans-serif`;
+            context.textBaseline = 'middle';
+            context.fillText('izanai', logoX + logoSize + padding, bandTop + bandHeight / 2);
+
+            canvas.toBlob(blob => {
+                if(!blob) return alert('Fotoğraf indirilemedi.');
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `izanai-${post.id}.png`;
+                link.click();
+                setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+            }, 'image/png');
+        };
+        image.onerror = () => alert('Bu fotoğraf watermark eklenerek indirilemedi.');
+        image.src = post.media.src;
+    }
+
     function renderSiteStats(){
         const activeSince = Date.now() - (24 * 60 * 60 * 1000);
         const activeUsers = new Set();
@@ -2000,7 +2056,7 @@
                 if(p.media.type && p.media.type.startsWith('video')){
                     mediaHtml = mediaSource ? `<video class="post-image" controls onclick="event.stopPropagation(); revealNsfwMedia(this.parentElement)" src="${mediaSource}"></video>` : '';
                 } else {
-                    mediaHtml = mediaSource ? `<img src="${mediaSource}" class="post-image" onclick="event.stopPropagation()" alt="Post Image">` : '';
+                    mediaHtml = mediaSource ? `<img src="${mediaSource}" class="post-image" onclick="event.stopPropagation()" alt="Post Image"><button class="btn-secondary" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); downloadWatermarkedImage(${p.id})"><i class="fa-solid fa-download"></i> Fotoğrafı İndir</button>` : '';
                 }
             }
             mediaHtml = protectNsfwMedia(mediaHtml, p.isNsfw);
