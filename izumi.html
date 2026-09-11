@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Cpath d='M50 15v70M29 25v23l21 13 21-13V25M29 48l-11-8M71 48l11-8M34 72h32' fill='none' stroke='%23ffffff' stroke-width='8' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         /* === IZANAI PURE DARK THEME === */
         :root {
@@ -893,7 +894,9 @@
         <input type="text" class="input-field" id="post-img" placeholder="Resim URL (İsteğe bağlı)">
         <input type="text" class="input-field" id="post-tags" placeholder="Etiketler (virgülle ayırın, ör. teknoloji, soru)">
         <input type="file" id="post-file" accept="image/*,video/*" style="margin-top:8px;">
+        <input type="file" id="post-gallery" accept="image/*" multiple style="margin-top:8px;">
         <div id="post-media-preview" style="margin-top:8px;"></div>
+        <div id="gallery-preview" class="gallery-preview"></div>
         <input type="hidden" id="post-media-type">
         <input type="hidden" id="post-media-src">
         <div style="display:flex; gap:10px;">
@@ -1035,6 +1038,13 @@
             <option value="en">English</option>
         </select>
         <div style="font-size:0.82rem; color:var(--text-muted);" data-i18n="languageHint">Türkçe ana dildir. Seçiminiz bu cihazda saklanır.</div>
+        <label id="theme-label" style="color:var(--text-muted); margin-top:12px; display:block;" for="theme-select">Tema</label>
+        <select class="select-field" id="theme-select">
+            <option value="dark">Dark</option>
+            <option value="oled">OLED Black</option>
+            <option value="gray">Classic Gray</option>
+            <option value="light">Light</option>
+        </select>
     </div>
 </div>
 
@@ -2035,6 +2045,11 @@
         });
         const fileInput = document.getElementById('post-file');
         if(fileInput) fileInput.value = '';
+        const galleryInput = document.getElementById('post-gallery');
+        if(galleryInput) galleryInput.value = '';
+        window.izumiGalleryData = [];
+        const galleryPreview = document.getElementById('gallery-preview');
+        if(galleryPreview) galleryPreview.innerHTML = '';
         const preview = document.getElementById('post-media-preview');
         if(preview) preview.innerHTML = '';
         const nsfw = document.getElementById('post-nsfw');
@@ -2057,6 +2072,7 @@
         const tags = document.getElementById('post-tags').value.split(',').map(tag => tag.trim().toLowerCase().replace(/\s+/g, '-')).filter(Boolean).filter((tag, index, list) => list.indexOf(tag) === index).slice(0, 5);
         const mediaType = document.getElementById('post-media-type').value;
         const mediaSrc = document.getElementById('post-media-src').value;
+        const gallery = Array.isArray(window.izumiGalleryData) ? window.izumiGalleryData : [];
         const isNsfw = document.getElementById('post-nsfw').checked;
         const isSpoiler = document.getElementById('post-spoiler').checked;
 
@@ -2067,7 +2083,7 @@
             sub,
             title,
             body,
-            media: mediaSrc ? { type: mediaType, src: mediaSrc } : (img ? { type: 'image', src: img } : null),
+            media: gallery.length ? gallery : (mediaSrc ? { type: mediaType, src: mediaSrc } : (img ? { type: 'image', src: img } : null)),
             isNsfw,
             isSpoiler,
             tags,
@@ -2105,6 +2121,13 @@
     function getAuthorKarma(username){
         const user = username === state.user.name ? state.user : (state.users || []).find(item => item.name === username);
         return user && Number.isFinite(user.karma) ? user.karma : 0;
+    }
+
+    function getAuthorBadge(username){
+        const karma = getAuthorKarma(username);
+        if(karma >= 250) return '<span class="user-badge">Popular Author</span>';
+        if(karma >= 100) return '<span class="user-badge">Senior Member</span>';
+        return '';
     }
 
     function protectNsfwMedia(mediaHtml, isNsfw){
@@ -2220,13 +2243,16 @@
             const userVote = (state.user.votes && state.user.votes[p.id]) || 0;
             let mediaHtml = '';
             const tagsHtml = (p.tags || []).length ? `<div class="tag-list">${p.tags.map(tag => `<span class="post-tag-link" data-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</span>`).join('')}</div>` : '';
-            if(p.media && p.media.src){
-                const mediaSource = safeMediaUrl(p.media.src);
-                if(p.media.type && p.media.type.startsWith('video')){
-                    mediaHtml = mediaSource ? `<video class="post-image" controls onclick="event.stopPropagation(); revealNsfwMedia(this.parentElement)" src="${mediaSource}"></video>` : '';
-                } else {
-                    mediaHtml = mediaSource ? `<img src="${mediaSource}" class="post-image" onclick="event.stopPropagation()" alt="Post Image">` : '';
-                }
+            const mediaItems = Array.isArray(p.media) ? p.media : (p.media ? [p.media] : []);
+            if(mediaItems.length){
+                const mediaCards = mediaItems.map(item => {
+                    const mediaSource = safeMediaUrl(item.src || item.dataUrl || '');
+                    if(!mediaSource) return '';
+                    return item.type && item.type.startsWith('video')
+                        ? `<video class="post-image" controls onclick="event.stopPropagation(); revealNsfwMedia(this.parentElement)" src="${mediaSource}"></video>`
+                        : `<img src="${mediaSource}" class="post-image" onclick="event.stopPropagation()" alt="Post Image">`;
+                }).join('');
+                mediaHtml = mediaItems.length > 1 ? `<div class="media-gallery">${mediaCards}</div>` : mediaCards;
             }
             mediaHtml = protectNsfwMedia(mediaHtml, p.isNsfw);
 
@@ -2258,14 +2284,14 @@
                         <div class="post-meta">
                             <a class="sub-tag post-sub-badge" data-sub="${escapeHtml(p.sub)}">i/${escapeHtml(p.sub)}</a>
                             <span class="author-line" data-username="${escapeHtml(p.author)}" style="cursor:pointer; color:var(--accent);">${getAuthorAvatarHtml(p.author)}${escapeHtml(p.author)}</span>
-                            <span class="post-author-karma">${getAuthorKarma(p.author)} karma</span> • 
+                            <span class="post-author-karma">${getAuthorKarma(p.author)} karma</span>${getAuthorBadge(p.author)} • 
                             <span>${escapeHtml(p.date)}</span>
                             ${p.editedAt ? '<span style="font-size:0.75rem; color:var(--text-muted);">(düzenlendi)</span>' : ''}
                             ${p.isNsfw ? '<span class="post-tag tag-nsfw">NSFW</span>' : ''}
                             ${p.isSpoiler ? '<span class="post-tag tag-spoiler">Spoiler</span>' : ''}
                         </div>
                         <div class="post-title" style="cursor:pointer;">${escapeHtml(p.title)}</div>
-                        <div class="post-body">${escapeHtml(p.body)}</div>
+                        <div class="post-body">${typeof renderMarkdown === 'function' ? renderMarkdown(p.body) : escapeHtml(p.body)}</div>
                         ${tagsHtml}
                         ${mediaHtml}
                         <div class="post-actions">
@@ -2406,7 +2432,7 @@
                     <span class="author-line"><span class="comment-author-link" data-username="${escapeHtml(comment.author)}" style="cursor:pointer;">${getAuthorAvatarHtml(comment.author)}</span><b class="comment-author-link" data-username="${escapeHtml(comment.author)}" style="cursor:pointer; color:var(--accent);">${escapeHtml(comment.author)}</b></span>
                     • ${escapeHtml(comment.date)} ${comment.edited ? '<span>(düzenlendi)</span>' : ''}
                 </div>
-                <div>${escapeHtml(comment.body)}</div>${mediaHtml}
+                <div>${typeof renderMarkdown === 'function' ? renderMarkdown(comment.body) : escapeHtml(comment.body)}</div>${mediaHtml}
                 <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
                     <button class="btn-secondary" onclick="event.stopPropagation(); setActiveReply(${post.id}, '${escapeHtml(commentId)}')">Cevapla</button>
                     ${canEdit ? `<button class="btn-secondary" onclick="event.stopPropagation(); editComment(${post.id}, ${actualIndex})">Düzenle</button>` : ''}
@@ -2890,6 +2916,7 @@
     })();
     
 </script>
+<script src="/socket.io/socket.io.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

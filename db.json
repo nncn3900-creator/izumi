@@ -4,7 +4,9 @@
       "name": "Anon862",
       "bio": "Özgür anonim kullanıcı.",
       "karma": 1,
-      "votes": {}
+      "votes": {},
+      "theme": "dark",
+      "language": "tr"
     },
     "subs": [
       {
@@ -20,6 +22,9 @@
     "saved": [],
     "activeSubs": [],
     "users": [],
+    "comments": [],
+    "theme": "dark",
+    "language": "tr",
     "feedLimit": 8,
     "sortMode": "new"
   },

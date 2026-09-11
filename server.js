@@ -2,11 +2,19 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const DB_PATH = path.join(__dirname, 'db.json');
 const app = express();
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, { cors: { origin: '*' } });
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
+
+io.on('connection', socket => {
+  socket.on('join-feed', () => socket.join('feed'));
+});
 
 const requestLog = new Map();
 app.use((req, res, next) => {
@@ -181,6 +189,7 @@ app.post('/api/state', (req, res)=>{
     const mergedState = mergeState(current.state, body.state);
     const ok = writeDB({ state: mergedState, updatedAt: Date.now() });
     if(!ok) return res.status(500).json({ error: 'write_failed' });
+    io.to('feed').emit('state-updated', { updatedAt: Date.now() });
     res.json({ ok: true });
   }catch(e){
     console.error('POST /api/state error:', e.message);
@@ -227,6 +236,6 @@ app.get('/', (req, res)=>{
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, ()=>{
+httpServer.listen(PORT, ()=>{
   console.log(`izumi server running on http://localhost:${PORT}`);
 });

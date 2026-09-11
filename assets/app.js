@@ -144,6 +144,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
     bindMediaInput('comment-file', 'comment-media-type', 'comment-media-src', 'comment-media-preview');
     bindMediaInput('prop-sub-avatar-file', 'prop-sub-avatar-type', 'prop-sub-avatar-src', 'prop-sub-avatar-upload-preview');
 
+    const galleryInput = document.getElementById('post-gallery');
+    if(galleryInput){
+        galleryInput.addEventListener('change', async event => {
+            const files = Array.from(event.target.files || []).slice(0, 8);
+            const validFiles = files.filter(file => file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024);
+            if(validFiles.length !== files.length) alert('Gallery images must be images up to 5 MB each.');
+            window.izumiGalleryData = await Promise.all(validFiles.map(file => new Promise(resolve => {
+                fileToDataUrl(file, (error, data) => resolve(error ? null : { type: file.type, src: data }));
+            })));
+            window.izumiGalleryData = window.izumiGalleryData.filter(Boolean);
+            const preview = document.getElementById('gallery-preview');
+            if(preview) preview.innerHTML = window.izumiGalleryData.map(item => `<img src="${item.src}" alt="Gallery preview">`).join('');
+        });
+    }
+
     const avatarInput = document.getElementById('profile-avatar-input');
     if(avatarInput){
         avatarInput.addEventListener('change', (ev)=>{
@@ -163,6 +178,53 @@ document.addEventListener('DOMContentLoaded', ()=>{
                     imgEl.src = data; imgEl.style.display = 'block';
                 }
             });
+        });
+    }
+});
+
+function renderMarkdown(value = ''){
+    const source = String(value || '');
+    if(!window.marked) return escapeMarkup(source);
+    const html = window.marked.parse(source, { breaks: true, gfm: true });
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    template.content.querySelectorAll('script, iframe, object, embed, style').forEach(node => node.remove());
+    template.content.querySelectorAll('*').forEach(node => {
+        Array.from(node.attributes).forEach(attribute => {
+            if(attribute.name.toLowerCase().startsWith('on') || attribute.name.toLowerCase() === 'style') node.removeAttribute(attribute.name);
+        });
+    });
+    return template.innerHTML;
+}
+
+function escapeMarkup(value){
+    return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+
+function applyIzumiTheme(theme){
+    const selected = ['dark', 'oled', 'gray', 'light'].includes(theme) ? theme : 'dark';
+    document.documentElement.dataset.theme = selected;
+    localStorage.setItem('izumi_theme', selected);
+    const select = document.getElementById('theme-select');
+    if(select) select.value = selected;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyIzumiTheme(localStorage.getItem('izumi_theme') || 'dark');
+    const updateThemeLabel = () => {
+        const label = document.getElementById('theme-label');
+        if(label) label.textContent = (localStorage.getItem('iz_language') || 'tr') === 'en' ? 'Theme' : 'Tema';
+    };
+    updateThemeLabel();
+    document.getElementById('language-select')?.addEventListener('change', updateThemeLabel);
+    document.getElementById('theme-select')?.addEventListener('change', event => applyIzumiTheme(event.target.value));
+
+    if(window.io){
+        const socket = window.io();
+        window.izumiSocket = socket;
+        socket.emit('join-feed');
+        socket.on('state-updated', async () => {
+            if(typeof window.loadStateFromServer === 'function') await window.loadStateFromServer();
         });
     }
 });
