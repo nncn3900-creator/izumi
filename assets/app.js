@@ -48,9 +48,17 @@ function bindMediaInput(inputId, typeId, sourceId, previewId){
     input.addEventListener('change', (event)=>{
         const file = event.target.files && event.target.files[0];
         if(!file) return;
-        if(file.size > 5 * 1024 * 1024){
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+        if(!isImage && !isVideo){
             input.value = '';
-            alert('Dosya boyutu en fazla 5 MB olabilir.');
+            alert('Yalnızca görsel veya video dosyası yükleyebilirsiniz.');
+            return;
+        }
+        const maxSize = isVideo ? 12 * 1024 * 1024 : 5 * 1024 * 1024;
+        if(file.size > maxSize){
+            input.value = '';
+            alert(isVideo ? 'Video boyutu en fazla 12 MB olabilir.' : 'Görsel boyutu en fazla 5 MB olabilir.');
             return;
         }
         fileToDataUrl(file, (error, data)=>{
@@ -59,7 +67,7 @@ function bindMediaInput(inputId, typeId, sourceId, previewId){
                 alert(error.message);
                 return;
             }
-            const type = file.type.startsWith('video') ? file.type : 'image';
+            const type = isVideo ? file.type : 'image';
             document.getElementById(typeId).value = type;
             document.getElementById(sourceId).value = data;
             const preview = document.getElementById(previewId);
