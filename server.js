@@ -224,6 +224,32 @@ app.post('/api/account/delete', (req, res)=>{
   }
 });
 
+function getPublicBaseUrl(req){
+  const configuredUrl = process.env.SITE_URL || process.env.RENDER_EXTERNAL_URL;
+  const baseUrl = configuredUrl || `${req.protocol}://${req.get('host')}`;
+  return baseUrl.replace(/\/$/, '');
+}
+
+app.get('/sitemap.xml', (req, res)=>{
+  const baseUrl = getPublicBaseUrl(req);
+  const lastModified = new Date(readDB().updatedAt || Date.now()).toISOString();
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${lastModified}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+  res.type('application/xml').send(sitemap);
+});
+
+app.get('/robots.txt', (req, res)=>{
+  const baseUrl = getPublicBaseUrl(req);
+  res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /db.json\nSitemap: ${baseUrl}/sitemap.xml\n`);
+});
+
 app.get('/db.json', (req, res)=>res.status(404).json({ error: 'not_found' }));
 
 // serve static files (frontend)
