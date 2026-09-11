@@ -94,6 +94,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer;
         }
 
         .logo-mark {
@@ -778,7 +779,7 @@
 <div class="app-container">
     <!-- SOL MENÜ -->
     <aside class="sidebar-left">
-        <div class="brand">
+        <div class="brand" role="button" tabindex="0" title="Ana sayfayı yenile" onclick="window.location.reload()" onkeydown="if(event.key === 'Enter' || event.key === ' ') window.location.reload()">
             <svg class="logo-mark" viewBox="0 0 100 100" aria-label="izanai logosu" role="img">
                 <path d="M50 15v70M29 25v23l21 13 21-13V25M29 48l-11-8M71 48l11-8M34 72h32"></path>
             </svg>
@@ -855,7 +856,7 @@
             </div>
             <div class="profile-stats">
                 <span><span data-i18n="posts">Postlar</span>: <b id="stat-posts">0</b></span>
-                <span><span data-i18n="karma">Karma</span>: <b id="stat-karma">1</b></span>
+                <span><span data-i18n="izumi">izumi</span>: <b id="stat-karma">1</b></span>
             </div>
         </div>
 
@@ -1131,7 +1132,7 @@
                 <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:8px;" id="user-profile-bio"></div>
                 <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;" id="user-profile-account-age"></div>
                 <div style="display:flex; gap:12px; font-size:0.85rem; color:var(--text-muted);">
-                    <span><span data-i18n="karma">Karma</span>: <b id="user-profile-karma">0</b></span>
+                    <span><span data-i18n="izumi">izumi</span>: <b id="user-profile-karma">0</b></span>
                     <span><span data-i18n="posts">Postlar</span>: <b id="user-profile-posts">0</b></span>
                 </div>
                 <div class="profile-counts"><span><span data-i18n="followers">Takipçi</span>: <b id="user-profile-followers">0</b></span><span><span data-i18n="followingCount">Takip</span>: <b id="user-profile-following">0</b></span></div>
@@ -2284,7 +2285,7 @@
                         <div class="post-meta">
                             <a class="sub-tag post-sub-badge" data-sub="${escapeHtml(p.sub)}">i/${escapeHtml(p.sub)}</a>
                             <span class="author-line" data-username="${escapeHtml(p.author)}" style="cursor:pointer; color:var(--accent);">${getAuthorAvatarHtml(p.author)}${escapeHtml(p.author)}</span>
-                            <span class="post-author-karma">${getAuthorKarma(p.author)} karma</span>${getAuthorBadge(p.author)} • 
+                            <span class="post-author-karma">${getAuthorKarma(p.author)} izumi</span>${getAuthorBadge(p.author)} • 
                             <span>${escapeHtml(p.date)}</span>
                             ${p.editedAt ? '<span style="font-size:0.75rem; color:var(--text-muted);">(düzenlendi)</span>' : ''}
                             ${p.isNsfw ? '<span class="post-tag tag-nsfw">NSFW</span>' : ''}
