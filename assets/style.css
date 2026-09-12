@@ -19,6 +19,14 @@ body{background:var(--theme-page); color:var(--theme-text);}
 
 .app-container{padding:16px;}
 
+.toast-region{position:fixed;right:20px;bottom:20px;z-index:2000;display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
+.toast{max-width:min(360px,calc(100vw - 32px));padding:11px 14px;border:1px solid var(--border-color);border-left:3px solid var(--accent);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-main);box-shadow:0 12px 30px rgba(0,0,0,.35);font-size:.88rem;animation:toast-in .2s ease-out}
+.toast.is-error{border-left-color:var(--danger)}
+@keyframes toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sub-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px;border:1px solid transparent;border-radius:var(--radius)}
+.sub-row:hover{border-color:var(--border-color);background:var(--bg-tertiary)}
+.mobile-nav{display:none}
+
 /* Make post cards slightly elevated */
 .post-card{box-shadow: 0 6px 18px rgba(0,0,0,0.5); transition: transform .14s ease, box-shadow .14s ease; overflow:hidden; border-radius:10px}
 .post-card:hover{transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.6);}
@@ -30,6 +38,12 @@ body{background:var(--theme-page); color:var(--theme-text);}
 @media (max-width: 980px){
     .app-container{grid-template-columns: 1fr; padding:12px;}
     .sidebar-left, .sidebar-right{display:none}
+    body{padding-bottom:68px}
+    .toast-region{right:12px;bottom:78px;align-items:stretch}
+    .mobile-nav{position:fixed;left:0;right:0;bottom:0;z-index:900;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--border-color);background:rgba(18,18,21,.96);backdrop-filter:blur(14px)}
+    .mobile-nav button{min-height:42px;border:0;border-radius:var(--radius);background:transparent;color:var(--text-muted);font-size:.72rem;cursor:pointer}
+    .mobile-nav button:hover,.mobile-nav button:focus{color:var(--text-main);background:var(--bg-tertiary)}
+    .mobile-nav i{display:block;margin-bottom:3px;font-size:1rem}
 }
 
 /* Vote box highlight */

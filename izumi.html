@@ -885,6 +885,13 @@
     </aside>
 </div>
 
+<div class="mobile-nav" aria-label="Mobil navigasyon">
+    <button type="button" onclick="filterFeed('all')"><i class="fa-solid fa-house"></i>Ana Akış</button>
+    <button type="button" onclick="setFeedMode('discover')"><i class="fa-solid fa-compass"></i>Keşfet</button>
+    <button type="button" onclick="openMobileSubs()"><i class="fa-solid fa-hashtag"></i>Sublar</button>
+    <button type="button" onclick="openModal('modal-profile')"><i class="fa-solid fa-user"></i>Profil</button>
+</div>
+
 <!-- POST MODALI -->
 <div class="modal-overlay" id="modal-post">
     <div class="modal">
@@ -924,6 +931,14 @@
         <input class="input-field" id="sub-name" placeholder="Sub adı (ör. yazilim)">
         <textarea class="textarea-field" id="sub-desc" placeholder="Kısa açıklama (isteğe bağlı)"></textarea>
         <div style="text-align:right;"><button class="btn-primary" onclick="submitSub()" data-i18n="create">Oluştur</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-mobile-subs">
+    <div class="modal">
+        <div class="modal-header"><span>Sublar</span><i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-mobile-subs')"></i></div>
+        <div id="mobile-subs-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <button class="btn-primary" onclick="closeModal('modal-mobile-subs'); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> Yeni Sub</button>
     </div>
 </div>
 
@@ -1189,6 +1204,21 @@
 
     let stateSyncPromise = null;
     let stateSyncQueued = false;
+
+    function showToast(message, type = 'info'){
+        let region = document.querySelector('.toast-region');
+        if(!region){
+            region = document.createElement('div');
+            region.className = 'toast-region';
+            region.setAttribute('aria-live', 'polite');
+            document.body.appendChild(region);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast${type === 'error' ? ' is-error' : ''}`;
+        toast.textContent = String(message || '');
+        region.appendChild(toast);
+        window.setTimeout(() => toast.remove(), 3200);
+    }
 
     function persistLocalState() {
         localStorage.setItem('iz_user', JSON.stringify(state.user));
@@ -1834,7 +1864,7 @@
             const avatar = s.avatar ? `<img src="${safeMediaUrl(s.avatar)}" alt="" style="width:22px;height:22px;object-fit:cover;border-radius:50%;margin-right:5px;vertical-align:middle;">` : '';
             // show delete button only if allowed by permission
             subList.innerHTML += `
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <div class="sub-row">
                     <div class="nav-link" data-context-sub="${escapeHtml(s.name)}" onclick="filterFeed('${escapeHtml(s.name)}')">${avatar}<i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>
                     <div style="display:flex; gap:6px; align-items:center">
                         <button class="btn-secondary" onclick="toggleSubscribe('${escapeHtml(s.name)}')">${isSub ? t('leave') : 'Katıl'}</button>
@@ -1851,6 +1881,30 @@
                 openSubProperties(event, element.dataset.contextSub);
             });
         });
+    }
+
+    function openMobileSubs(){
+        const list = document.getElementById('mobile-subs-list');
+        if(!list) return;
+        list.innerHTML = '';
+        const joinedSubs = new Set((state.user.subscriptions || []).map(normalizeSubName));
+        (state.subs || []).forEach(sub => {
+            const row = document.createElement('div');
+            row.className = 'sub-row';
+            const name = normalizeSubName(sub.name);
+            row.innerHTML = `<button type="button" class="nav-link" style="flex:1; text-align:left; border:0; background:transparent;" data-mobile-sub="${escapeHtml(name)}"><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(name)}</button><button type="button" class="btn-secondary" data-mobile-join="${escapeHtml(name)}">${joinedSubs.has(name) ? 'Çık' : 'Katıl'}</button>`;
+            list.appendChild(row);
+        });
+        if(!list.children.length) list.innerHTML = '<div style="color:var(--text-muted)">Henüz sub yok.</div>';
+        list.querySelectorAll('[data-mobile-sub]').forEach(button => button.addEventListener('click', () => {
+            closeModal('modal-mobile-subs');
+            filterFeed(button.dataset.mobileSub);
+        }));
+        list.querySelectorAll('[data-mobile-join]').forEach(button => button.addEventListener('click', () => {
+            toggleSubscribe(button.dataset.mobileJoin);
+            openMobileSubs();
+        }));
+        openModal('modal-mobile-subs');
     }
 
     function renderActiveSubs(){
@@ -2071,10 +2125,11 @@
 
     function toggleSubscribe(subName){
         const normalizedSubName = normalizeSubName(subName);
-        if(!normalizedSubName || !state.subs.some(sub => sub.name === normalizedSubName)) return alert('Sub bulunamadı.');
+        if(!normalizedSubName || !state.subs.some(sub => normalizeSubName(sub.name) === normalizedSubName)) return showToast('Sub bulunamadı.', 'error');
         if(!Array.isArray(state.user.subscriptions)) state.user.subscriptions = [];
         const subscriptions = new Set(state.user.subscriptions.map(normalizeSubName).filter(Boolean));
-        if(subscriptions.has(normalizedSubName)) subscriptions.delete(normalizedSubName);
+        const isLeaving = subscriptions.has(normalizedSubName);
+        if(isLeaving) subscriptions.delete(normalizedSubName);
         else subscriptions.add(normalizedSubName);
         state.user.subscriptions = Array.from(subscriptions);
 
@@ -2084,6 +2139,7 @@
         if(currentUser) currentUser.subscriptions = state.user.subscriptions.slice();
         saveState();
         renderSubs();
+        showToast(isLeaving ? 'Subdan ayrıldın.' : 'Suba katıldın.');
     }
 
     // Demo içerik özelliği kaldırıldı
