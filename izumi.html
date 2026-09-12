@@ -213,9 +213,14 @@
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            font-size: 1.1rem;
-            padding: 4px;
+            font-size: 0.95rem;
+            width: 28px;
+            height: 28px;
+            padding: 0;
             border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .vote-btn:hover {
@@ -1805,7 +1810,7 @@
             // show delete button only if allowed by permission
             subList.innerHTML += `
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <div class="nav-link" onclick="filterFeed('${s.name}')" oncontextmenu="openSubProperties(event, '${s.name}')">${avatar}<i class="fa-solid fa-hashtag"></i> i/${s.name}</div>
+                    <div class="nav-link" data-context-sub="${escapeHtml(s.name)}" onclick="filterFeed('${escapeHtml(s.name)}')">${avatar}<i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>
                     <div style="display:flex; gap:6px; align-items:center">
                         <button class="btn-secondary" onclick="toggleSubscribe('${s.name}')">${isSub ? t('leave') : t('subscribe')}</button>
                         ${canManage ? `<button class="btn-secondary" title="Sub özellikleri" onclick="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-gear"></i></button>` : ''}
@@ -1813,6 +1818,13 @@
                 </div>
             `;
             select.innerHTML += `<option value="${s.name}">i/${s.name}</option>`;
+        });
+        subList.querySelectorAll('[data-context-sub]').forEach(element => {
+            element.addEventListener('contextmenu', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                openSubProperties(event, element.dataset.contextSub);
+            });
         });
     }
 
@@ -2323,9 +2335,9 @@
             container.innerHTML += `
                 <div class="post-card ${state.expandedPostId === p.id ? 'is-expanded' : ''}" onclick="openComments(${p.id})">
                     <div class="vote-box">
-                        <button class="vote-btn ${userVote===1 ? 'voted-up' : ''}" onclick="event.stopPropagation(); vote(${p.id}, 1)"><i class="fa-solid fa-chevron-up"></i></button>
-                        <span>${p.votes}</span>
-                        <button class="vote-btn ${userVote===-1 ? 'voted-down' : ''}" onclick="event.stopPropagation(); vote(${p.id}, -1)"><i class="fa-solid fa-chevron-down"></i></button>
+                        <button class="vote-btn ${userVote===1 ? 'voted-up' : ''}" title="Artı oy" aria-label="Artı oy" onclick="event.stopPropagation(); vote(${p.id}, 1)"><i class="fa-solid fa-plus"></i></button>
+                        <span>${Number.isFinite(Number(p.votes)) ? Number(p.votes) : 0}</span>
+                        <button class="vote-btn ${userVote===-1 ? 'voted-down' : ''}" title="Eksi oy" aria-label="Eksi oy" onclick="event.stopPropagation(); vote(${p.id}, -1)"><i class="fa-solid fa-minus"></i></button>
                     </div>
                     <div class="post-content">
                         <div class="post-meta">
