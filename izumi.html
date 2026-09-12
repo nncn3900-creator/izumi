@@ -839,8 +839,7 @@
             .mobile-drawer .drawer-close { width:36px; height:36px; padding:0; }
             .mobile-drawer-section { margin-top:10px; padding-top:10px; border-top:1px solid var(--border-color); }
             .main-feed .search-bar {
-                position: sticky;
-                top: 0;
+                position: static;
                 z-index: 60;
                 min-height: 54px;
                 margin: 0 -10px;
@@ -852,8 +851,7 @@
             .main-feed .search-bar .input-field { min-width: 0; }
             .main-feed .search-bar .select-field { width: 92px; flex: 0 0 92px; padding-left: 6px; padding-right: 6px; }
             .main-feed .feed-tabs {
-                position: sticky;
-                top: 57px;
+                position: static;
                 z-index: 59;
                 margin: 0 -10px;
                 padding: 7px 10px;
@@ -865,8 +863,7 @@
             }
             .main-feed .feed-tabs .feed-tab { flex: 0 0 auto; }
             .main-feed .feed-header {
-                position: sticky;
-                top: 120px;
+                position: static;
                 z-index: 58;
                 margin: 0 -10px;
                 padding: 8px 10px;
@@ -875,6 +872,18 @@
                 backdrop-filter: blur(14px);
             }
             .main-feed .post-body { max-height: none; overflow: visible; }
+            .mobile-sticky-controls {
+                position: sticky;
+                top: 0;
+                z-index: 60;
+                margin: 0 -10px;
+                background: rgba(9, 9, 11, .97);
+                box-shadow: 0 8px 16px rgba(0,0,0,.18);
+                backdrop-filter: blur(14px);
+            }
+            .mobile-sticky-controls .search-bar,
+            .mobile-sticky-controls .feed-tabs,
+            .mobile-sticky-controls .feed-header { margin-left: 0; margin-right: 0; }
         }
     </style>
     <meta name="google-site-verification" content="T7aCR27gtzRNeEMHRaRRqWgL14ltLCQ6bK3RvD8-uSU" />
@@ -908,6 +917,7 @@
 
     <!-- ANAMETİN / AKIŞ -->
     <main class="main-feed">
+        <div class="mobile-sticky-controls">
         <div style="display:flex; gap:8px; align-items:center;" class="search-bar">
             <input type="text" class="input-field" id="search-input" placeholder="Akışta ara (başlık veya içerik)..." data-placeholder-tr="Akışta ara (başlık veya içerik)..." data-placeholder-en="Search the feed (title or content)..." oninput="searchPosts()">
             <select class="select-field" id="search-type" onchange="searchPosts()" aria-label="Arama türü">
@@ -935,6 +945,7 @@
                     <option value="hot" data-i18n="hot">Gündem</option>
                 </select>
             </div>
+        </div>
         </div>
         <!-- Hero / welcome card -->
         <div class="hero">
@@ -1940,6 +1951,7 @@
         if(id === 'modal-post') preparePostModal();
         const modal = document.getElementById(id);
         if(!modal) return;
+        if(id === 'modal-profile') cleanupProfilePanelText();
         modal.style.display = 'flex';
         requestAnimationFrame(() => modal.classList.add('is-visible'));
     }
@@ -2080,7 +2092,7 @@
         const staleNodes = [];
         while(walker.nextNode()){
             const value = walker.currentNode.nodeValue.trim();
-            if(value.startsWith('home:') || value.startsWith('notifications:')) staleNodes.push(walker.currentNode);
+            if(value.includes('home:') || value.includes('notifications:')) staleNodes.push(walker.currentNode);
         }
         staleNodes.forEach(node => node.remove());
     }
