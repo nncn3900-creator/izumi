@@ -839,6 +839,7 @@
             .mobile-drawer .drawer-close { width:36px; height:36px; padding:0; }
             .mobile-drawer-section { margin-top:10px; padding-top:10px; border-top:1px solid var(--border-color); }
             .main-feed .search-bar {
+                position: sticky;
                 top: 0;
                 z-index: 60;
                 min-height: 54px;
@@ -851,6 +852,7 @@
             .main-feed .search-bar .input-field { min-width: 0; }
             .main-feed .search-bar .select-field { width: 92px; flex: 0 0 92px; padding-left: 6px; padding-right: 6px; }
             .main-feed .feed-tabs {
+                position: sticky;
                 top: 57px;
                 z-index: 59;
                 margin: 0 -10px;
@@ -863,6 +865,7 @@
             }
             .main-feed .feed-tabs .feed-tab { flex: 0 0 auto; }
             .main-feed .feed-header {
+                position: sticky;
                 top: 120px;
                 z-index: 58;
                 margin: 0 -10px;
@@ -871,6 +874,7 @@
                 border-bottom: 1px solid var(--border-color);
                 backdrop-filter: blur(14px);
             }
+            .main-feed .post-body { max-height: none; overflow: visible; }
         }
     </style>
     <meta name="google-site-verification" content="T7aCR27gtzRNeEMHRaRRqWgL14ltLCQ6bK3RvD8-uSU" />
@@ -907,11 +911,11 @@
         <div style="display:flex; gap:8px; align-items:center;" class="search-bar">
             <input type="text" class="input-field" id="search-input" placeholder="Akışta ara (başlık veya içerik)..." data-placeholder-tr="Akışta ara (başlık veya içerik)..." data-placeholder-en="Search the feed (title or content)..." oninput="searchPosts()">
             <select class="select-field" id="search-type" onchange="searchPosts()" aria-label="Arama türü">
-                <option value="all">Tümü</option>
-                <option value="posts">Postlar</option>
-                <option value="users">Kullanıcılar</option>
-                <option value="subs">Sublar</option>
-                <option value="tags">Etiketler</option>
+                <option value="all" data-i18n="all">Tümü</option>
+                <option value="posts" data-i18n="posts">Postlar</option>
+                <option value="users" data-i18n="users">Kullanıcılar</option>
+                <option value="subs" data-i18n="subsTitle">Sub'lar</option>
+                <option value="tags" data-i18n="tags">Etiketler</option>
             </select>
         </div>
         <div id="search-results" class="search-results"></div>
@@ -975,7 +979,7 @@
             <div id="sub-list" style="display:flex; flex-direction:column; gap:8px;">
                 <!-- Sub'lar gelecek -->
             </div>
-            <button class="btn-secondary" style="width:100%; margin-top:10px;" onclick="openMobileSubs('popular')"><i class="fa-solid fa-compass"></i> Tüm subları keşfet</button>
+            <button class="btn-secondary" style="width:100%; margin-top:10px;" onclick="openMobileSubs('popular')"><i class="fa-solid fa-compass"></i> <span data-i18n="discoverAllSubs">Tüm Sub'ları Keşfet</span></button>
         </div>
 
         <div class="card">
@@ -991,10 +995,10 @@
 </div>
 
 <div class="mobile-nav" aria-label="Mobil navigasyon">
-    <button type="button" onclick="filterFeed('all')"><i class="fa-solid fa-house"></i>Ana Akış</button>
-    <button type="button" onclick="setFeedMode('discover')"><i class="fa-solid fa-compass"></i>Keşfet</button>
-    <button type="button" onclick="openMobileSubs()"><i class="fa-solid fa-hashtag"></i>Sublar</button>
-    <button type="button" onclick="openModal('modal-profile')"><i class="fa-solid fa-user"></i>Profil</button>
+    <button type="button" onclick="filterFeed('all')"><i class="fa-solid fa-house"></i><span data-i18n="home">Ana Akış</span></button>
+    <button type="button" onclick="setFeedMode('discover')"><i class="fa-solid fa-compass"></i><span data-i18n="discover">Keşfet</span></button>
+    <button type="button" onclick="openMobileSubs()"><i class="fa-solid fa-hashtag"></i><span data-i18n="subsTitle">Sub'lar</span></button>
+    <button type="button" onclick="openModal('modal-profile')"><i class="fa-solid fa-user"></i><span data-i18n="profileSettings">Profil</span></button>
 </div>
 
 <button type="button" class="mobile-menu-toggle" aria-label="Menüyü aç" aria-expanded="false" onclick="toggleMobileMenu()">
@@ -1010,16 +1014,16 @@
         <span id="mobile-current-user-avatar" class="avatar" style="width:32px; height:32px;">A</span>
         <span id="mobile-current-user">Anon</span>
     </div>
-    <button type="button" class="btn-primary" onclick="closeMobileMenu(); openPostComposer()"><i class="fa-solid fa-pen"></i> Post Paylaş</button>
-    <a class="nav-link" onclick="closeMobileMenu(); filterFeed('all')"><i class="fa-solid fa-house"></i> Ana Akış</a>
-    <a class="nav-link" onclick="closeMobileMenu(); setFeedMode('discover')"><i class="fa-solid fa-compass"></i> Keşfet</a>
-    <a class="nav-link" onclick="closeMobileMenu(); openNotifications()"><i class="fa-solid fa-bell"></i> Bildirimler</a>
-    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-login')"><i class="fa-solid fa-right-to-bracket"></i> Oturum Aç / Hesaplar</a>
-    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> Sub Oluştur</a>
-    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-profile')"><i class="fa-solid fa-user-gear"></i> Profil Ayarları</a>
-    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-settings')"><i class="fa-solid fa-gear"></i> Ayarlar</a>
+    <button type="button" class="btn-primary" onclick="closeMobileMenu(); openPostComposer()"><i class="fa-solid fa-pen"></i> <span data-i18n="sharePost">Post Paylaş</span></button>
+    <a class="nav-link" onclick="closeMobileMenu(); filterFeed('all')"><i class="fa-solid fa-house"></i> <span data-i18n="home">Ana Akış</span></a>
+    <a class="nav-link" onclick="closeMobileMenu(); setFeedMode('discover')"><i class="fa-solid fa-compass"></i> <span data-i18n="discover">Keşfet</span></a>
+    <a class="nav-link" onclick="closeMobileMenu(); openNotifications()"><i class="fa-solid fa-bell"></i> <span data-i18n="notifications">Bildirimler</span></a>
+    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-login')"><i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="loginAccounts">Oturum Aç / Hesaplar</span></a>
+    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> <span data-i18n="createSub">Sub Oluştur</span></a>
+    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-profile')"><i class="fa-solid fa-user-gear"></i> <span data-i18n="profileSettings">Profil Ayarları</span></a>
+    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-settings')"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">Ayarlar</span></a>
     <div class="mobile-drawer-section">
-        <button type="button" class="btn-secondary" style="width:100%;" onclick="closeMobileMenu(); openMobileSubs('popular')"><i class="fa-solid fa-hashtag"></i> Subları keşfet</button>
+        <button type="button" class="btn-secondary" style="width:100%;" onclick="closeMobileMenu(); openMobileSubs('popular')"><i class="fa-solid fa-hashtag"></i> <span data-i18n="discoverSubs">Subları keşfet</span></button>
     </div>
 </aside>
 
@@ -1067,14 +1071,14 @@
 
 <div class="modal-overlay" id="modal-mobile-subs">
     <div class="modal">
-        <div class="modal-header"><span>Sublar</span><i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-mobile-subs')"></i></div>
+        <div class="modal-header"><span data-i18n="subsTitle">Sub'lar</span><i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-mobile-subs')"></i></div>
         <div class="sub-discover-toolbar">
-            <button type="button" class="btn-secondary active" data-sub-discover-mode="popular" onclick="openMobileSubs('popular')">Popüler</button>
-            <button type="button" class="btn-secondary" data-sub-discover-mode="new" onclick="openMobileSubs('new')">Yeni</button>
-            <button type="button" class="btn-secondary" data-sub-discover-mode="joined" onclick="openMobileSubs('joined')">Katıldıklarım</button>
+            <button type="button" class="btn-secondary active" data-sub-discover-mode="popular" onclick="openMobileSubs('popular')" data-i18n="popular">Popüler</button>
+            <button type="button" class="btn-secondary" data-sub-discover-mode="new" onclick="openMobileSubs('new')" data-i18n="new">Yeni</button>
+            <button type="button" class="btn-secondary" data-sub-discover-mode="joined" onclick="openMobileSubs('joined')" data-i18n="joinedSubs">Katıldıklarım</button>
         </div>
         <div id="mobile-subs-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-        <button class="btn-primary" onclick="closeModal('modal-mobile-subs'); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> Yeni Sub</button>
+        <button class="btn-primary" onclick="closeModal('modal-mobile-subs'); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> <span data-i18n="newSub">Yeni Sub</span></button>
     </div>
 </div>
 
@@ -1153,10 +1157,10 @@
             </div>
         </div>
         <div class="profile-tabs" role="tablist" aria-label="Profil bölümleri">
-            <button type="button" class="profile-tab active" data-profile-tab="subs" onclick="setProfileTab('subs')">Katıldıklarım</button>
-            <button type="button" class="profile-tab" data-profile-tab="saved" onclick="setProfileTab('saved')">Kaydettiklerim</button>
-            <button type="button" class="profile-tab" data-profile-tab="comments" onclick="setProfileTab('comments')">Yorumlarım</button>
-            <button type="button" class="profile-tab" data-profile-tab="settings" onclick="setProfileTab('settings')">Ayarlar</button>
+            <button type="button" class="profile-tab active" data-profile-tab="subs" onclick="setProfileTab('subs')" data-i18n="joinedSubs">Katıldıklarım</button>
+            <button type="button" class="profile-tab" data-profile-tab="saved" onclick="setProfileTab('saved')" data-i18n="savedPosts">Kaydettiklerim</button>
+            <button type="button" class="profile-tab" data-profile-tab="comments" onclick="setProfileTab('comments')" data-i18n="myComments">Yorumlarım</button>
+            <button type="button" class="profile-tab" data-profile-tab="settings" onclick="setProfileTab('settings')" data-i18n="settings">Ayarlar</button>
         </div>
         <div style="margin-top:12px;" data-profile-panel="subs">
             <h4 style="margin:0 0 8px 0" data-i18n="subscriptions">Katıldığım Sub'lar</h4>
@@ -1271,9 +1275,9 @@
         <textarea class="textarea-field" id="report-reason" placeholder="Rapor sebebini açıkla..."></textarea>
         <select class="select-field" id="report-type">
             <option value="spam">Spam</option>
-            <option value="inappropriate">Uygunsuz İçerik</option>
-            <option value="harassment">Taciz/Bully</option>
-            <option value="other">Diğer</option>
+            <option value="inappropriate" data-i18n="inappropriate">Uygunsuz İçerik</option>
+            <option value="harassment" data-i18n="harassment">Taciz/Zorbalık</option>
+            <option value="other" data-i18n="other">Diğer</option>
         </select>
         <div style="margin-top:12px; text-align:right; display:flex; gap:8px; justify-content:flex-end;">
             <button class="btn-secondary" onclick="closeModal('modal-report')">İptal</button>
@@ -1445,7 +1449,7 @@
             'Post Rapor Et': 'Report Post',
             'Rapor sebebini açıkla...': 'Explain the reason for the report...',
             'Uygunsuz İçerik': 'Inappropriate Content',
-            'Taciz/Bully': 'Harassment/Bullying',
+            'Taciz/Zorbalık': 'Harassment/Bullying',
             'Diğer': 'Other',
             'İptal': 'Cancel',
             'Rapor Gönder': 'Submit Report',
@@ -1511,6 +1515,34 @@
 
     translations.tr.subscriptions = "Katıldığım Sub'lar";
     translations.en.subscriptions = 'Joined Subs';
+    Object.assign(translations.tr, {
+        joinedSubs: 'Katıldıklarım',
+        subsTitle: "Sub'lar",
+        discoverSubs: "Subları keşfet",
+        discoverAllSubs: "Tüm Sub'ları Keşfet",
+        join: 'Katıl',
+        users: 'Kullanıcılar',
+        tags: 'Etiketler',
+        popular: 'Popüler',
+        new: 'Yeni'
+        , inappropriate: 'Uygunsuz İçerik'
+        , harassment: 'Taciz/Zorbalık'
+        , other: 'Diğer'
+    });
+    Object.assign(translations.en, {
+        joinedSubs: 'Joined Subs',
+        subsTitle: 'Subs',
+        discoverSubs: 'Discover subs',
+        discoverAllSubs: 'Discover all subs',
+        join: 'Join',
+        users: 'Users',
+        tags: 'Tags',
+        popular: 'Popular',
+        new: 'New'
+        , inappropriate: 'Inappropriate content'
+        , harassment: 'Harassment/Bullying'
+        , other: 'Other'
+    });
 
     let translatingStaticText = false;
     function translateStaticText(){
@@ -1548,6 +1580,10 @@
         if(search) search.placeholder = search.dataset[`placeholder${state.language === 'en' ? 'En' : 'Tr'}`];
         const languageSelect = document.getElementById('language-select');
         if(languageSelect) languageSelect.value = state.language;
+        const searchType = document.getElementById('search-type');
+        if(searchType) searchType.setAttribute('aria-label', state.language === 'en' ? 'Search type' : 'Arama türü');
+        const feedTabs = document.querySelector('.feed-tabs');
+        if(feedTabs) feedTabs.setAttribute('aria-label', state.language === 'en' ? 'Feed types' : 'Akış türleri');
         translateStaticText();
         if(document.getElementById('posts-container')) renderPosts();
         if(document.getElementById('sub-list')) renderSubs();
@@ -1902,7 +1938,10 @@
 
     function openModal(id) { 
         if(id === 'modal-post') preparePostModal();
-        document.getElementById(id).style.display = 'flex'; 
+        const modal = document.getElementById(id);
+        if(!modal) return;
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => modal.classList.add('is-visible'));
     }
 
     function isRegisteredUser(){
@@ -1934,7 +1973,12 @@
             if(cur){ cur.innerText = ''; cur.style.display = 'none'; }
         }
     }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if(!modal) return;
+        modal.classList.remove('is-visible');
+        window.setTimeout(() => { if(!modal.classList.contains('is-visible')) modal.style.display = 'none'; }, 180);
+    }
 
     function renderProfile() {
         document.getElementById('user-name').innerText = state.user.name;
@@ -1954,7 +1998,7 @@
         // render active subscriptions
         const subList = document.getElementById('user-subs-list');
         if(subList){ subList.innerHTML = '';
-            (state.user.subscriptions || []).forEach(s => { const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.innerHTML = `<div>i/${s}</div><button class='btn-secondary' onclick="toggleSubscribe('${s}')">Çık</button>`; subList.appendChild(div); });
+            (state.user.subscriptions || []).forEach(s => { const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.innerHTML = `<div>i/${s}</div><button class='btn-secondary' onclick="toggleSubscribe('${s}')">${t('leave')}</button>`; subList.appendChild(div); });
             if((state.user.subscriptions||[]).length === 0) subList.innerHTML = '<div style="color:var(--text-muted)">Henüz katıldığınız bir topluluk yok</div>';
         }
         // render owned subs management (transfer owner, set delete permission)
@@ -2060,7 +2104,7 @@
                 <div class="sub-row">
                     <div class="nav-link" data-context-sub="${escapeHtml(s.name)}" onclick="filterFeed('${escapeHtml(s.name)}')">${avatar}<i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>
                     <div style="display:flex; gap:6px; align-items:center">
-                        <button class="btn-secondary" onclick="toggleSubscribe('${escapeHtml(s.name)}')">${isSub ? t('leave') : 'Katıl'}</button>
+                        <button class="btn-secondary" onclick="toggleSubscribe('${escapeHtml(s.name)}')">${isSub ? t('leave') : t('join')}</button>
                         ${canManage ? `<button class="btn-secondary" title="Sub özellikleri" onclick="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-gear"></i></button>` : ''}
                     </div>
                 </div>
@@ -2090,7 +2134,7 @@
             const row = document.createElement('div');
             row.className = 'sub-row';
             const name = normalizeSubName(sub.name);
-            row.innerHTML = `<div style="flex:1; min-width:0;"><button type="button" class="nav-link" style="width:100%; text-align:left; border:0; background:transparent;" data-mobile-sub="${escapeHtml(name)}"><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(name)}</button><div class="sub-discover-meta">${escapeHtml(sub.desc || 'Topluluk')} • ${postCounts.get(name) || 0} post</div></div><button type="button" class="btn-secondary" data-mobile-join="${escapeHtml(name)}">${joinedSubs.has(name) ? 'Çık' : 'Katıl'}</button>`;
+            row.innerHTML = `<div style="flex:1; min-width:0;"><button type="button" class="nav-link" style="width:100%; text-align:left; border:0; background:transparent;" data-mobile-sub="${escapeHtml(name)}"><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(name)}</button><div class="sub-discover-meta">${escapeHtml(sub.desc || 'Topluluk')} • ${postCounts.get(name) || 0} post</div></div><button type="button" class="btn-secondary" data-mobile-join="${escapeHtml(name)}">${joinedSubs.has(name) ? t('leave') : t('join')}</button>`;
             list.appendChild(row);
         });
         if(!list.children.length) list.innerHTML = '<div style="color:var(--text-muted)">Henüz sub yok.</div>';
@@ -2603,7 +2647,7 @@
             return;
         }
 
-        postsToRender.slice(0, state.feedLimit).forEach(p => {
+        postsToRender.slice(0, state.feedLimit).forEach((p, index) => {
             const commentCount = p.comments ? p.comments.length : 0;
             const viewCount = Number.isFinite(p.views) ? p.views : 0;
             const isSaved = state.saved.includes(p.id);
@@ -2648,7 +2692,7 @@
             ` : '';
 
             container.innerHTML += `
-                <div class="post-card ${state.expandedPostId === p.id ? 'is-expanded' : ''}" onclick="openComments(${p.id})">
+                <div class="post-card ${state.expandedPostId === p.id ? 'is-expanded' : ''}" style="--post-index:${index}" onclick="openComments(${p.id})">
                     <div class="vote-box">
                         <button class="vote-btn ${userVote===1 ? 'voted-up' : ''}" title="Olumlu oy" aria-label="Olumlu oy" onclick="event.stopPropagation(); vote(${p.id}, 1)"><i class="fa-solid fa-chevron-up"></i></button>
                         <span>${Number.isFinite(Number(p.votes)) ? Number(p.votes) : 0}</span>
