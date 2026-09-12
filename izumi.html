@@ -1002,7 +1002,8 @@
             </div>
         </div>
         <div style="margin-top:12px;">
-            <h4 style="margin:0 0 8px 0" data-i18n="subscriptions">Aktif Abonelikler</h4>
+            <h4 style="margin:0 0 8px 0" data-i18n="subscriptions">Katıldığım Sub'lar</h4>
+                        home: 'Ana Akış', notifications: 'Bildirimler', loginAccounts: 'Oturum Aç / Hesaplar', createSub: 'Sub Oluştur', profileSettings: 'Profil Ayarları', settings: 'Ayarlar', sharePost: 'Post Paylaş', activeSubs: "Aktif Sub'lar", session: 'Oturum', all: 'Tümü', following: 'Takip Ettiklerim', discover: 'Keşfet', saved: 'Kaydedilenler', allFeed: 'Tüm Akış', sort: 'Sırala:', new: 'Yeni', top: 'En Çok Oy', hot: 'Gündem', welcome: "Hoş geldin — İzumi'ye giriş yaptın", welcomeText: 'Yeni fikirler keşfet, kendi topluluğunu oluştur ve paylaş.', shareNow: 'Hemen Post Paylaş', language: 'Dil', languageHint: 'Türkçe ana dildir. Seçiminiz bu cihazda saklanır.', anonymousProfile: 'Anonim Profilin', noBio: 'Henüz biyografi eklenmedi.', posts: 'Postlar', karma: 'Karma', popularSubs: "Popüler Sub'lar", izumiStats: 'izanai İstatistikleri', active24h: 'Son 24s aktif', post: 'Post', comment: 'Yorum', sub: 'Sub', newPost: 'Yeni Post Gönder', share: 'Paylaş', newSub: 'Yeni Sub Oluştur', create: 'Oluştur', subProperties: 'Sub Özellikleri', deletePermission: 'Silme İzni', commentDeletePermission: 'Yorum Silme İzni', transferOwnership: 'Sahipliği Devret', subscriptions: "Katıldığım Sub'lar", savedPosts: 'Kaydedilen Gönderiler', ownedSubs: "Sahip Olduğum Sub'lar", myComments: 'Yorumlarım', portableBackup: 'Taşınabilir Tam Kayıt', subscribe: 'Katıl', leave: 'Çık', views: 'Görüntülenme', comments: 'Yorumlar', savedLabel: 'Kaydedildi', save: 'Kaydet', report: 'Rapor Et', delete: 'Sil', edit: 'Düzenle', createAccountHint: 'Yeni Hesap Oluştur (parola 8+ karakter, büyük/küçük harf, rakam ve özel karakter içermeli)', loginTitle: 'Hesaplar / Oturum Aç', login: 'Oturum Aç', postDetails: 'Gönderi Detayı & Yorumlar', addComment: 'Yorum Yap', reportPost: 'Post Rapor Et', userProfile: 'Kullanıcı Profili', followers: 'Takipçi', followingCount: 'Takip', nsfwContent: 'NSFW içerik', clickToReveal: 'Görüntülemek için tıklayın', accountAge: 'Hesap yaşı', accountAgeUnknown: 'Hesap yaşı bilinmiyor', da [truncated]
             <div id="user-subs-list" style="display:flex; flex-direction:column; gap:6px"></div>
         </div>
         <div style="margin-top:12px;">
@@ -1296,7 +1297,6 @@
             'Kaldır': 'Remove',
             'Düzenle': 'Edit',
             'Sil': 'Delete',
-            'Abone Ol': 'Katıl',
             'Çık': 'Leave',
             'Bu Subda Paylaş': 'Post in This Sub',
             'Henüz aktif sub yok': 'No active subs yet',
@@ -1741,7 +1741,7 @@
         const subList = document.getElementById('user-subs-list');
         if(subList){ subList.innerHTML = '';
             (state.user.subscriptions || []).forEach(s => { const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.innerHTML = `<div>i/${s}</div><button class='btn-secondary' onclick="toggleSubscribe('${s}')">Çık</button>`; subList.appendChild(div); });
-            if((state.user.subscriptions||[]).length === 0) subList.innerHTML = '<div style="color:var(--text-muted)">Henüz abone olduğunuz bir topluluk yok</div>';
+            if((state.user.subscriptions||[]).length === 0) subList.innerHTML = '<div style="color:var(--text-muted)">Henüz katıldığınız bir topluluk yok</div>';
         }
         // render owned subs management (transfer owner, set delete permission)
         const ownedDiv = document.getElementById('owned-subs-list');
@@ -1815,7 +1815,8 @@
         select.innerHTML = '';
 
         state.subs.forEach(s => {
-            const isSub = state.user.subscriptions && state.user.subscriptions.includes(s.name);
+            const joinedSubs = new Set((state.user.subscriptions || []).map(normalizeSubName));
+            const isSub = joinedSubs.has(normalizeSubName(s.name));
             const isOwner = s.owner && state.user && state.user.name && s.owner === state.user.name;
             const isAdmin = Array.isArray(s.admins) && state.user && s.admins.includes(state.user.name);
             const canManage = isOwner || isAdmin;
@@ -1826,7 +1827,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                     <div class="nav-link" data-context-sub="${escapeHtml(s.name)}" onclick="filterFeed('${escapeHtml(s.name)}')">${avatar}<i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>
                     <div style="display:flex; gap:6px; align-items:center">
-                        <button class="btn-secondary" onclick="toggleSubscribe('${s.name}')">${isSub ? t('leave') : t('subscribe')}</button>
+                        <button class="btn-secondary" onclick="toggleSubscribe('${escapeHtml(s.name)}')">${isSub ? t('leave') : 'Katıl'}</button>
                         ${canManage ? `<button class="btn-secondary" title="Sub özellikleri" onclick="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-gear"></i></button>` : ''}
                     </div>
                 </div>
