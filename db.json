@@ -1,12 +1,13 @@
 {
   "state": {
     "user": {
-      "name": "Anon862",
+      "name": "Anon955",
       "bio": "Özgür anonim kullanıcı.",
       "karma": 1,
       "votes": {},
-      "theme": "dark",
-      "language": "tr"
+      "following": [],
+      "subscriptions": [],
+      "settings": {}
     },
     "subs": [
       {
@@ -26,7 +27,12 @@
     "theme": "dark",
     "language": "tr",
     "feedLimit": 8,
-    "sortMode": "new"
+    "sortMode": "new",
+    "deletedPostIds": [],
+    "deletedSubNames": [],
+    "reports": [],
+    "notifications": [],
+    "feedMode": "all"
   },
-  "updatedAt": 1788870945762
+  "updatedAt": 1789255816970
 }

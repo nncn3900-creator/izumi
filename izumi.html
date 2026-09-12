@@ -777,6 +777,68 @@
             .modal-header { gap: 12px; }
             .modal-header > span { min-width: 0; overflow-wrap: anywhere; }
         }
+
+        .mobile-menu-toggle, .mobile-menu-overlay, .mobile-drawer { display: none; }
+
+        @media (max-width: 640px) {
+            body { overflow: hidden; }
+            .app-container { height: 100dvh; padding: 0; overflow: hidden; }
+            .sidebar-left, .sidebar-right { display: none !important; }
+            .mobile-nav { display: none !important; }
+            .main-feed { height: 100%; overflow-y: auto; padding: 64px 10px 24px; overscroll-behavior: contain; }
+            .mobile-menu-toggle {
+                position: fixed;
+                top: 12px;
+                left: 12px;
+                z-index: 1200;
+                display: inline-flex;
+                width: 42px;
+                height: 42px;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius);
+                background: rgba(18, 18, 21, .96);
+                color: var(--text-main);
+                box-shadow: 0 8px 22px rgba(0,0,0,.3);
+                cursor: pointer;
+            }
+            .mobile-menu-toggle i { font-size: 1.15rem; }
+            .mobile-menu-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 1100;
+                display: block;
+                background: rgba(0,0,0,.58);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity .18s ease;
+            }
+            .mobile-menu-overlay.is-open { opacity: 1; pointer-events: auto; }
+            .mobile-drawer {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                z-index: 1150;
+                display: flex;
+                width: min(86vw, 340px);
+                flex-direction: column;
+                gap: 8px;
+                padding: 18px 14px calc(18px + env(safe-area-inset-bottom));
+                overflow-y: auto;
+                background: var(--bg-secondary);
+                border-right: 1px solid var(--border-color);
+                box-shadow: 16px 0 36px rgba(0,0,0,.35);
+                transform: translateX(-105%);
+                transition: transform .2s ease;
+            }
+            .mobile-drawer.is-open { transform: translateX(0); }
+            .mobile-drawer-header { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:4px 2px 14px; border-bottom:1px solid var(--border-color); }
+            .mobile-drawer .nav-link { width:100%; }
+            .mobile-drawer .drawer-close { width:36px; height:36px; padding:0; }
+            .mobile-drawer-section { margin-top:10px; padding-top:10px; border-top:1px solid var(--border-color); }
+        }
     </style>
     <meta name="google-site-verification" content="T7aCR27gtzRNeEMHRaRRqWgL14ltLCQ6bK3RvD8-uSU" />
 </head>
@@ -809,7 +871,16 @@
 
     <!-- ANAMETİN / AKIŞ -->
     <main class="main-feed">
-        <input type="text" class="input-field search-bar" id="search-input" placeholder="Akışta ara (başlık veya içerik)..." data-placeholder-tr="Akışta ara (başlık veya içerik)..." data-placeholder-en="Search the feed (title or content)..." oninput="searchPosts()">
+        <div style="display:flex; gap:8px; align-items:center;" class="search-bar">
+            <input type="text" class="input-field" id="search-input" placeholder="Akışta ara (başlık veya içerik)..." data-placeholder-tr="Akışta ara (başlık veya içerik)..." data-placeholder-en="Search the feed (title or content)..." oninput="searchPosts()">
+            <select class="select-field" id="search-type" onchange="searchPosts()" aria-label="Arama türü">
+                <option value="all">Tümü</option>
+                <option value="posts">Postlar</option>
+                <option value="users">Kullanıcılar</option>
+                <option value="subs">Sublar</option>
+                <option value="tags">Etiketler</option>
+            </select>
+        </div>
         <div id="search-results" class="search-results"></div>
         <div class="feed-tabs" aria-label="Akış türleri">
             <button class="feed-tab active" data-feed-mode="all" onclick="setFeedMode('all')" data-i18n="all">Tümü</button>
@@ -871,6 +942,7 @@
             <div id="sub-list" style="display:flex; flex-direction:column; gap:8px;">
                 <!-- Sub'lar gelecek -->
             </div>
+            <button class="btn-secondary" style="width:100%; margin-top:10px;" onclick="openMobileSubs('popular')"><i class="fa-solid fa-compass"></i> Tüm subları keşfet</button>
         </div>
 
         <div class="card">
@@ -891,6 +963,32 @@
     <button type="button" onclick="openMobileSubs()"><i class="fa-solid fa-hashtag"></i>Sublar</button>
     <button type="button" onclick="openModal('modal-profile')"><i class="fa-solid fa-user"></i>Profil</button>
 </div>
+
+<button type="button" class="mobile-menu-toggle" aria-label="Menüyü aç" aria-expanded="false" onclick="toggleMobileMenu()">
+    <i class="fa-solid fa-bars"></i>
+</button>
+<div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+<aside class="mobile-drawer" id="mobile-drawer" aria-label="Mobil menü">
+    <div class="mobile-drawer-header">
+        <strong>izanai</strong>
+        <button type="button" class="btn-secondary drawer-close" aria-label="Menüyü kapat" onclick="closeMobileMenu()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; padding:4px 2px; color:var(--text-muted);">
+        <span id="mobile-current-user-avatar" class="avatar" style="width:32px; height:32px;">A</span>
+        <span id="mobile-current-user">Anon</span>
+    </div>
+    <button type="button" class="btn-primary" onclick="closeMobileMenu(); openPostComposer()"><i class="fa-solid fa-pen"></i> Post Paylaş</button>
+    <a class="nav-link" onclick="closeMobileMenu(); filterFeed('all')"><i class="fa-solid fa-house"></i> Ana Akış</a>
+    <a class="nav-link" onclick="closeMobileMenu(); setFeedMode('discover')"><i class="fa-solid fa-compass"></i> Keşfet</a>
+    <a class="nav-link" onclick="closeMobileMenu(); openNotifications()"><i class="fa-solid fa-bell"></i> Bildirimler</a>
+    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-login')"><i class="fa-solid fa-right-to-bracket"></i> Oturum Aç / Hesaplar</a>
+    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> Sub Oluştur</a>
+    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-profile')"><i class="fa-solid fa-user-gear"></i> Profil Ayarları</a>
+    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-settings')"><i class="fa-solid fa-gear"></i> Ayarlar</a>
+    <div class="mobile-drawer-section">
+        <button type="button" class="btn-secondary" style="width:100%;" onclick="closeMobileMenu(); openMobileSubs('popular')"><i class="fa-solid fa-hashtag"></i> Subları keşfet</button>
+    </div>
+</aside>
 
 <!-- POST MODALI -->
 <div class="modal-overlay" id="modal-post">
@@ -937,6 +1035,11 @@
 <div class="modal-overlay" id="modal-mobile-subs">
     <div class="modal">
         <div class="modal-header"><span>Sublar</span><i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-mobile-subs')"></i></div>
+        <div class="sub-discover-toolbar">
+            <button type="button" class="btn-secondary active" data-sub-discover-mode="popular" onclick="openMobileSubs('popular')">Popüler</button>
+            <button type="button" class="btn-secondary" data-sub-discover-mode="new" onclick="openMobileSubs('new')">Yeni</button>
+            <button type="button" class="btn-secondary" data-sub-discover-mode="joined" onclick="openMobileSubs('joined')">Katıldıklarım</button>
+        </div>
         <div id="mobile-subs-list" style="display:flex; flex-direction:column; gap:8px;"></div>
         <button class="btn-primary" onclick="closeModal('modal-mobile-subs'); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> Yeni Sub</button>
     </div>
@@ -1016,29 +1119,35 @@
                 </div>
             </div>
         </div>
-        <div style="margin-top:12px;">
+        <div class="profile-tabs" role="tablist" aria-label="Profil bölümleri">
+            <button type="button" class="profile-tab active" data-profile-tab="subs" onclick="setProfileTab('subs')">Katıldıklarım</button>
+            <button type="button" class="profile-tab" data-profile-tab="saved" onclick="setProfileTab('saved')">Kaydettiklerim</button>
+            <button type="button" class="profile-tab" data-profile-tab="comments" onclick="setProfileTab('comments')">Yorumlarım</button>
+            <button type="button" class="profile-tab" data-profile-tab="settings" onclick="setProfileTab('settings')">Ayarlar</button>
+        </div>
+        <div style="margin-top:12px;" data-profile-panel="subs">
             <h4 style="margin:0 0 8px 0" data-i18n="subscriptions">Katıldığım Sub'lar</h4>
                         home: 'Ana Akış', notifications: 'Bildirimler', loginAccounts: 'Oturum Aç / Hesaplar', createSub: 'Sub Oluştur', profileSettings: 'Profil Ayarları', settings: 'Ayarlar', sharePost: 'Post Paylaş', activeSubs: "Aktif Sub'lar", session: 'Oturum', all: 'Tümü', following: 'Takip Ettiklerim', discover: 'Keşfet', saved: 'Kaydedilenler', allFeed: 'Tüm Akış', sort: 'Sırala:', new: 'Yeni', top: 'En Çok Oy', hot: 'Gündem', welcome: "Hoş geldin — İzumi'ye giriş yaptın", welcomeText: 'Yeni fikirler keşfet, kendi topluluğunu oluştur ve paylaş.', shareNow: 'Hemen Post Paylaş', language: 'Dil', languageHint: 'Türkçe ana dildir. Seçiminiz bu cihazda saklanır.', anonymousProfile: 'Anonim Profilin', noBio: 'Henüz biyografi eklenmedi.', posts: 'Postlar', karma: 'Karma', popularSubs: "Popüler Sub'lar", izumiStats: 'izanai İstatistikleri', active24h: 'Son 24s aktif', post: 'Post', comment: 'Yorum', sub: 'Sub', newPost: 'Yeni Post Gönder', share: 'Paylaş', newSub: 'Yeni Sub Oluştur', create: 'Oluştur', subProperties: 'Sub Özellikleri', deletePermission: 'Silme İzni', commentDeletePermission: 'Yorum Silme İzni', transferOwnership: 'Sahipliği Devret', subscriptions: "Katıldığım Sub'lar", savedPosts: 'Kaydedilen Gönderiler', ownedSubs: "Sahip Olduğum Sub'lar", myComments: 'Yorumlarım', portableBackup: 'Taşınabilir Tam Kayıt', subscribe: 'Katıl', leave: 'Çık', views: 'Görüntülenme', comments: 'Yorumlar', savedLabel: 'Kaydedildi', save: 'Kaydet', report: 'Rapor Et', delete: 'Sil', edit: 'Düzenle', createAccountHint: 'Yeni Hesap Oluştur (parola 8+ karakter, büyük/küçük harf, rakam ve özel karakter içermeli)', loginTitle: 'Hesaplar / Oturum Aç', login: 'Oturum Aç', postDetails: 'Gönderi Detayı & Yorumlar', addComment: 'Yorum Yap', reportPost: 'Post Rapor Et', userProfile: 'Kullanıcı Profili', followers: 'Takipçi', followingCount: 'Takip', nsfwContent: 'NSFW içerik', clickToReveal: 'Görüntülemek için tıklayın', accountAge: 'Hesap yaşı', accountAgeUnknown: 'Hesap yaşı bilinmiyor', da [truncated]
             <div id="user-subs-list" style="display:flex; flex-direction:column; gap:6px"></div>
         </div>
-        <div style="margin-top:12px;">
+        <div style="margin-top:12px;" data-profile-panel="saved">
             <h4 style="margin:0 0 8px 0" data-i18n="savedPosts">Kaydedilen Gönderiler</h4>
             <div id="user-saved-list" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow:auto; padding-right:6px"></div>
         </div>
-        <div style="margin-top:12px;">
+        <div style="margin-top:12px;" data-profile-panel="subs">
             <h4 style="margin:0 0 8px 0" data-i18n="ownedSubs">Sahip Olduğum Sub'lar</h4>
             <div id="owned-subs-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px"></div>
         </div>
-        <div style="margin-top:12px;">
+        <div style="margin-top:12px;" data-profile-panel="comments">
             <h4 style="margin:0 0 8px 0" data-i18n="myComments">Yorumlarım</h4>
             <div id="user-comments-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px"></div>
         </div>
-        <div style="margin-top:12px;">
+        <div style="margin-top:12px;" data-profile-panel="settings">
             <h4 style="margin:0 0 8px 0" data-i18n="settings">Ayarlar</h4>
             <label style="display:flex; align-items:center; gap:8px"><input type="checkbox" id="setting-show-profile" /> Profili herkese göster</label>
             <label style="display:flex; align-items:center; gap:8px"><input type="checkbox" id="setting-autologin" /> Otomatik giriş (tarayıcıda sakla)</label>
         </div>
-        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-color);">
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-color);" data-profile-panel="settings">
             <h4 style="margin:0 0 8px 0" data-i18n="portableBackup">Taşınabilir Tam Kayıt</h4>
             <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">Hesapları, postları, yorumları ve ayarları tek dosyada saklayın.</div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -1181,6 +1290,7 @@
     let activePostIdForComments = null;
     let activeReplyPostId = null;
     let activeReplyCommentId = null;
+    let commentSortMode = 'new';
 
     let state = {
         user: JSON.parse(localStorage.getItem('iz_user')) || { name: 'Anon' + Math.floor(Math.random()*1000), bio: 'Özgür anonim kullanıcı.', karma: 1, votes: {}, following: [], subscriptions: [], settings: {} },
@@ -1219,6 +1329,29 @@
         region.appendChild(toast);
         window.setTimeout(() => toast.remove(), 3200);
     }
+
+    function toggleMobileMenu(){
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        if(!drawer || !overlay) return;
+        const isOpen = drawer.classList.toggle('is-open');
+        overlay.classList.toggle('is-open', isOpen);
+        if(toggle) toggle.setAttribute('aria-expanded', String(isOpen));
+    }
+
+    function closeMobileMenu(){
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        drawer?.classList.remove('is-open');
+        overlay?.classList.remove('is-open');
+        if(toggle) toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    document.addEventListener('keydown', event => {
+        if(event.key === 'Escape') closeMobileMenu();
+    });
 
     function persistLocalState() {
         localStorage.setItem('iz_user', JSON.stringify(state.user));
@@ -1342,6 +1475,9 @@
             'createAccountHint': 'Create New Account (password must be 8+ characters with upper/lowercase, a number and a special character)', 'loginTitle': 'Accounts / Log In', 'login': 'Log In', 'postDetails': 'Post Details & Comments', 'addComment': 'Add a Comment', 'reportPost': 'Report Post', 'userProfile': 'User Profile', 'followers': 'Followers', 'followingCount': 'Following'
         }
     };
+
+    translations.tr.subscriptions = "Katıldığım Sub'lar";
+    translations.en.subscriptions = 'Joined Subs';
 
     let translatingStaticText = false;
     function translateStaticText(){
@@ -1660,6 +1796,10 @@
         populateAccountsSelect();
         closeModal('modal-login');
         document.getElementById('current-user').innerText = state.user.name;
+        const mobileUser = document.getElementById('mobile-current-user');
+        if(mobileUser) mobileUser.innerText = state.user.name;
+        const mobileAvatar = document.getElementById('mobile-current-user-avatar');
+        if(mobileAvatar) mobileAvatar.innerText = state.user.name.charAt(0).toUpperCase();
         const cu = document.getElementById('current-user-avatar'); if(cu) cu.innerText = state.user.name.charAt(0).toUpperCase();
     }
 
@@ -1685,6 +1825,7 @@
         closeModal('modal-profile');
         renderSubs();
         renderProfile();
+        setProfileTab('subs');
         renderPosts();
         alert('Hesabınız kalıcı olarak silindi.');
     }
@@ -1848,6 +1989,25 @@
         const s2 = document.getElementById('setting-autologin'); if(s2) s2.checked = !!autoLogin;
     }
 
+    function setProfileTab(tab){
+        const selected = ['subs', 'saved', 'comments', 'settings'].includes(tab) ? tab : 'subs';
+        cleanupProfilePanelText();
+        document.querySelectorAll('[data-profile-tab]').forEach(button => button.classList.toggle('active', button.dataset.profileTab === selected));
+        document.querySelectorAll('[data-profile-panel]').forEach(panel => { panel.hidden = panel.dataset.profilePanel !== selected; });
+    }
+
+    function cleanupProfilePanelText(){
+        const profile = document.getElementById('modal-profile');
+        if(!profile) return;
+        const walker = document.createTreeWalker(profile, NodeFilter.SHOW_TEXT);
+        const staleNodes = [];
+        while(walker.nextNode()){
+            const value = walker.currentNode.nodeValue.trim();
+            if(value.startsWith('home:') || value.startsWith('notifications:')) staleNodes.push(walker.currentNode);
+        }
+        staleNodes.forEach(node => node.remove());
+    }
+
     function renderSubs() {
         const subList = document.getElementById('sub-list');
         const select = document.getElementById('post-sub-select');
@@ -1883,16 +2043,21 @@
         });
     }
 
-    function openMobileSubs(){
+    function openMobileSubs(mode = 'popular'){
         const list = document.getElementById('mobile-subs-list');
         if(!list) return;
         list.innerHTML = '';
         const joinedSubs = new Set((state.user.subscriptions || []).map(normalizeSubName));
-        (state.subs || []).forEach(sub => {
+        const postCounts = new Map((state.subs || []).map(sub => [normalizeSubName(sub.name), (state.posts || []).filter(post => normalizeSubName(post.sub) === normalizeSubName(sub.name)).length]));
+        let discoverSubs = (state.subs || []).slice();
+        if(mode === 'joined') discoverSubs = discoverSubs.filter(sub => joinedSubs.has(normalizeSubName(sub.name)));
+        discoverSubs.sort((first, second) => mode === 'popular' ? (postCounts.get(normalizeSubName(second.name)) || 0) - (postCounts.get(normalizeSubName(first.name)) || 0) : normalizeSubName(first.name).localeCompare(normalizeSubName(second.name)));
+        document.querySelectorAll('[data-sub-discover-mode]').forEach(button => button.classList.toggle('active', button.dataset.subDiscoverMode === mode));
+        discoverSubs.forEach(sub => {
             const row = document.createElement('div');
             row.className = 'sub-row';
             const name = normalizeSubName(sub.name);
-            row.innerHTML = `<button type="button" class="nav-link" style="flex:1; text-align:left; border:0; background:transparent;" data-mobile-sub="${escapeHtml(name)}"><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(name)}</button><button type="button" class="btn-secondary" data-mobile-join="${escapeHtml(name)}">${joinedSubs.has(name) ? 'Çık' : 'Katıl'}</button>`;
+            row.innerHTML = `<div style="flex:1; min-width:0;"><button type="button" class="nav-link" style="width:100%; text-align:left; border:0; background:transparent;" data-mobile-sub="${escapeHtml(name)}"><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(name)}</button><div class="sub-discover-meta">${escapeHtml(sub.desc || 'Topluluk')} • ${postCounts.get(name) || 0} post</div></div><button type="button" class="btn-secondary" data-mobile-join="${escapeHtml(name)}">${joinedSubs.has(name) ? 'Çık' : 'Katıl'}</button>`;
             list.appendChild(row);
         });
         if(!list.children.length) list.innerHTML = '<div style="color:var(--text-muted)">Henüz sub yok.</div>';
@@ -2181,6 +2346,7 @@
         closeModal('modal-sub');
         nameInput.value = '';
         descInput.value = '';
+        showToast('Sub oluşturuldu.');
     }
 
     function resetPostComposer(){
@@ -2253,6 +2419,7 @@
         renderActiveSubs();
         closeModal('modal-post');
         resetPostComposer();
+        showToast('Post paylaşıldı.');
     }
 
     function getAuthorAvatarHtml(username){
@@ -2325,6 +2492,22 @@
         };
         image.onerror = () => alert('Bu fotoğraf watermark eklenerek indirilemedi.');
         image.src = post.media.src;
+    }
+
+    async function copyPostLink(postId){
+        const url = `${window.location.origin}${window.location.pathname}#post-${encodeURIComponent(postId)}`;
+        try{
+            if(navigator.share){
+                await navigator.share({ title: 'izanai postu', url });
+            } else if(navigator.clipboard){
+                await navigator.clipboard.writeText(url);
+                showToast('Post bağlantısı kopyalandı.');
+            } else {
+                window.prompt('Post bağlantısını kopyala:', url);
+            }
+        }catch(error){
+            if(error && error.name !== 'AbortError') showToast('Post bağlantısı paylaşılamadı.', 'error');
+        }
     }
 
     function renderSiteStats(){
@@ -2418,6 +2601,13 @@
                         <button class="btn-primary" onclick="submitComment()">Gönder</button>
                     </div>
                     <div style="font-size:0.85rem; color:var(--text-muted);">${commentCount} yorum</div>
+                    <div class="comment-toolbar">
+                        <span style="font-size:.78rem; color:var(--text-muted);">Yorumları sırala</span>
+                        <select class="select-field comment-sort" onchange="setCommentSort(this.value)">
+                            <option value="new" ${commentSortMode === 'new' ? 'selected' : ''}>En yeni</option>
+                            <option value="old" ${commentSortMode === 'old' ? 'selected' : ''}>En eski</option>
+                        </select>
+                    </div>
                     <div id="comments-list-inline" style="display:flex; flex-direction:column; gap:8px;">
                         ${renderCommentsMarkup(p)}
                     </div>
@@ -2450,6 +2640,7 @@
                             <button class="action-btn" onclick="event.stopPropagation(); openComments(${p.id})"><i class="fa-regular fa-comment"></i> ${commentCount} ${t('comments')}</button>
                             <button class="action-btn" onclick="event.stopPropagation(); toggleSave(${p.id})"><i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i> ${isSaved ? t('savedLabel') : t('save')}</button>
                             <button class="action-btn" onclick="event.stopPropagation(); reportPost(${p.id})"><i class="fa-solid fa-flag"></i> ${t('report')}</button>
+                            <button class="action-btn" title="Bağlantıyı kopyala" onclick="event.stopPropagation(); copyPostLink(${p.id})"><i class="fa-solid fa-link"></i> Paylaş</button>
                             ${((p.authorId && state.user.id && p.authorId === state.user.id) || (!p.authorId && p.author === state.user.name)) ? `<button class="action-btn" onclick="event.stopPropagation(); deletePost(${p.id})"><i class="fa-solid fa-trash"></i> ${t('delete')}</button>` : ''}
                             ${((p.authorId && state.user.id && p.authorId === state.user.id) || (!p.authorId && p.author === state.user.name)) ? `<button class="action-btn" onclick="event.stopPropagation(); editPost(${p.id})"><i class="fa-solid fa-pen"></i> ${t('edit')}</button>` : ''}
                             ${(p.media && p.media.src && !(p.media.type && p.media.type.startsWith('video'))) ? `<button class="action-btn" title="Fotoğrafı indir" onclick="event.stopPropagation(); downloadWatermarkedImage(${p.id})"><i class="fa-solid fa-download"></i> İndir</button>` : ''}
@@ -2612,7 +2803,17 @@
             </div>`;
         };
 
-        return (post.comments || []).filter(comment => !comment.parentId).map((comment, idx) => renderCommentNode(comment, 0)).join('');
+        const rootComments = (post.comments || []).filter(comment => !comment.parentId).slice().sort((first, second) => {
+            const firstTime = Number(first.createdAt) || 0;
+            const secondTime = Number(second.createdAt) || 0;
+            return commentSortMode === 'old' ? firstTime - secondTime : secondTime - firstTime;
+        });
+        return rootComments.map(comment => renderCommentNode(comment, 0)).join('');
+    }
+
+    function setCommentSort(mode){
+        commentSortMode = mode === 'old' ? 'old' : 'new';
+        if(activePostIdForComments !== null) renderPosts();
     }
 
     function renderCommentsList(post) {
@@ -2667,6 +2868,7 @@
         saveState();
         renderPosts();
         renderProfile();
+        showToast('Yorum gönderildi.');
     }
 
     function deleteComment(postId, idx){
@@ -2991,12 +3193,13 @@
 
     function searchPosts(){
         const query = document.getElementById('search-input').value.trim().toLowerCase();
+        const searchType = document.getElementById('search-type')?.value || 'all';
         const resultsBox = document.getElementById('search-results');
         if(!query){
             if(resultsBox) resultsBox.style.display = 'none';
             return renderPosts();
         }
-        const results = (state.posts || []).filter(post =>
+        const postResults = (state.posts || []).filter(post =>
             (post.title || '').toLowerCase().includes(query) ||
             (post.body || '').toLowerCase().includes(query) ||
             (post.sub || '').toLowerCase().includes(query) ||
@@ -3004,17 +3207,23 @@
         );
         const users = (state.users || []).filter(user => normalizeUsername(user.name).includes(query)).slice(0, 5);
         const subs = (state.subs || []).filter(sub => sub.name.toLowerCase().includes(query)).slice(0, 5);
+        const results = searchType === 'users' || searchType === 'subs' || searchType === 'tags' ? [] : postResults;
+        const visibleUsers = searchType === 'all' || searchType === 'users' ? users : [];
+        const visibleSubs = searchType === 'all' || searchType === 'subs' ? subs : [];
+        const visibleTags = searchType === 'all' || searchType === 'tags' ? Array.from(new Set((state.posts || []).flatMap(post => post.tags || []).filter(tag => tag.toLowerCase().includes(query)))).slice(0, 8) : [];
         if(resultsBox){
             const items = [
-                ...users.map(user => `<div class="search-result-item" data-search-user="${escapeHtml(user.name)}"><span><i class="fa-solid fa-user"></i> ${escapeHtml(user.name)}</span><span>Kullanıcı</span></div>`),
-                ...subs.map(sub => `<div class="search-result-item" data-search-sub="${escapeHtml(sub.name)}"><span><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(sub.name)}</span><span>Sub</span></div>`)
+                ...visibleUsers.map(user => `<div class="search-result-item" data-search-user="${escapeHtml(user.name)}"><span><i class="fa-solid fa-user"></i> ${escapeHtml(user.name)}</span><span>Kullanıcı</span></div>`),
+                ...visibleSubs.map(sub => `<div class="search-result-item" data-search-sub="${escapeHtml(sub.name)}"><span><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(sub.name)}</span><span>Sub</span></div>`),
+                ...visibleTags.map(tag => `<div class="search-result-item" data-search-tag="${escapeHtml(tag)}"><span><i class="fa-solid fa-tag"></i> #${escapeHtml(tag)}</span><span>Etiket</span></div>`)
             ];
             resultsBox.innerHTML = items.length ? items.join('') : '<div style="color:var(--text-muted)">Kullanıcı veya sub bulunamadı.</div>';
             resultsBox.querySelectorAll('[data-search-user]').forEach(element => element.addEventListener('click', () => openUserProfile(element.dataset.searchUser)));
             resultsBox.querySelectorAll('[data-search-sub]').forEach(element => element.addEventListener('click', () => filterFeed(element.dataset.searchSub)));
+            resultsBox.querySelectorAll('[data-search-tag]').forEach(element => element.addEventListener('click', () => filterByTag(element.dataset.searchTag)));
             resultsBox.style.display = 'block';
         }
-        renderPosts(results, `Arama: "${query}"`);
+        renderPosts(results, `${searchType === 'tags' ? '#' : ''}Arama: "${query}"`);
     }
 
     // ===== COMMENT EDIT/DELETE =====
