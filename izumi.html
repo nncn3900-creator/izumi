@@ -2335,9 +2335,9 @@
             container.innerHTML += `
                 <div class="post-card ${state.expandedPostId === p.id ? 'is-expanded' : ''}" onclick="openComments(${p.id})">
                     <div class="vote-box">
-                        <button class="vote-btn ${userVote===1 ? 'voted-up' : ''}" title="Artı oy" aria-label="Artı oy" onclick="event.stopPropagation(); vote(${p.id}, 1)"><i class="fa-solid fa-plus"></i></button>
+                        <button class="vote-btn ${userVote===1 ? 'voted-up' : ''}" title="Olumlu oy" aria-label="Olumlu oy" onclick="event.stopPropagation(); vote(${p.id}, 1)"><i class="fa-solid fa-chevron-up"></i></button>
                         <span>${Number.isFinite(Number(p.votes)) ? Number(p.votes) : 0}</span>
-                        <button class="vote-btn ${userVote===-1 ? 'voted-down' : ''}" title="Eksi oy" aria-label="Eksi oy" onclick="event.stopPropagation(); vote(${p.id}, -1)"><i class="fa-solid fa-minus"></i></button>
+                        <button class="vote-btn ${userVote===-1 ? 'voted-down' : ''}" title="Olumsuz oy" aria-label="Olumsuz oy" onclick="event.stopPropagation(); vote(${p.id}, -1)"><i class="fa-solid fa-chevron-down"></i></button>
                     </div>
                     <div class="post-content">
                         <div class="post-meta">
@@ -2628,24 +2628,13 @@
         if(state.user && state.user.name === post.author) authorUser = state.user;
         else authorUser = (state.users || []).find(u=>u.name === post.author);
 
-        const existing = Number(state.user.votes[id]) || 0;
-        if(existing === voteChange) {
-            // undo
-            post.votes -= voteChange;
-            delete state.user.votes[id];
-            if(authorUser) authorUser.karma = (Number(authorUser.karma) || 0) - voteChange;
-        } else if(existing === 0) {
-            // new vote
-            post.votes += voteChange;
-            state.user.votes[id] = voteChange;
-            if(authorUser) authorUser.karma = (Number(authorUser.karma) || 0) + voteChange;
-        } else {
-            // switch vote
-            post.votes -= existing;
-            post.votes += voteChange;
-            state.user.votes[id] = voteChange;
-            if(authorUser) authorUser.karma = (Number(authorUser.karma) || 0) + (voteChange - existing);
-        }
+        const storedVote = Number(state.user.votes[id]);
+        const existing = storedVote === 1 || storedVote === -1 ? storedVote : 0;
+        const nextVote = existing === voteChange ? 0 : voteChange;
+        post.votes = post.votes - existing + nextVote;
+        if(nextVote === 0) delete state.user.votes[id];
+        else state.user.votes[id] = nextVote;
+        if(authorUser) authorUser.karma = (Number(authorUser.karma) || 0) - existing + nextVote;
 
         addNotification(post.author, 'vote', `${state.user.name}, "${post.title}" postuna oy verdi.`, post.id);
         saveState();
