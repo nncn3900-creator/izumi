@@ -1296,7 +1296,7 @@
             'Kaldır': 'Remove',
             'Düzenle': 'Edit',
             'Sil': 'Delete',
-            'Abone Ol': 'Subscribe',
+            'Abone Ol': 'Katıl',
             'Çık': 'Leave',
             'Bu Subda Paylaş': 'Post in This Sub',
             'Henüz aktif sub yok': 'No active subs yet',
@@ -1355,6 +1355,7 @@
     }
 
     function t(key){
+        if(key === 'subscribe') return state.language === 'en' ? 'Join' : 'Katıl';
         return (translations[state.language || 'tr'] || translations.tr)[key] || key;
     }
 
@@ -1457,10 +1458,21 @@
             if(Array.isArray(s.reports)) state.reports = mergeRecords(state.reports, s.reports, 'date');
             if(Array.isArray(s.notifications)) state.notifications = normalizeNotifications(mergeRecords(state.notifications, s.notifications, 'id'));
             state.user = localUser;
+            syncCurrentUserFromRecords();
             persistLocalState();
             console.log('State loaded from server');
         }catch(e){ 
             console.warn('loadStateFromServer failed (using local data):', e.message); 
+        }
+    }
+
+    function syncCurrentUserFromRecords(){
+        if(!state.user || !Array.isArray(state.users)) return;
+        const currentUser = state.users.find(user =>
+            (state.user.id && user.id === state.user.id) || user.name === state.user.name
+        );
+        if(currentUser && Array.isArray(currentUser.subscriptions)){
+            state.user.subscriptions = Array.from(new Set(currentUser.subscriptions.map(normalizeSubName).filter(Boolean)));
         }
     }
 
@@ -1502,12 +1514,14 @@
             const deletedPostIds = new Set([...(state.deletedPostIds || []), ...(incoming.deletedPostIds || [])].map(Number));
             state.deletedPostIds = Array.from(deletedPostIds);
             const mergedPosts = Array.isArray(incoming.posts) ? mergePostRecords(state.posts, incoming.posts).filter(post => !deletedPostIds.has(Number(post.id))) : state.posts;
-            const changed = JSON.stringify(mergedPosts || []) !== JSON.stringify(state.posts || []) || JSON.stringify(incoming.subs || []) !== JSON.stringify(state.subs || []) || JSON.stringify(incoming.notifications || []) !== JSON.stringify(state.notifications || []);
+            const mergedUsers = Array.isArray(incoming.users) ? mergeRecords(state.users, incoming.users, 'id') : state.users;
+            const changed = JSON.stringify(mergedPosts || []) !== JSON.stringify(state.posts || []) || JSON.stringify(incoming.subs || []) !== JSON.stringify(state.subs || []) || JSON.stringify(incoming.notifications || []) !== JSON.stringify(state.notifications || []) || JSON.stringify(mergedUsers || []) !== JSON.stringify(state.users || []);
             if(!changed) return;
             if(Array.isArray(incoming.posts)) state.posts = mergedPosts;
             if(Array.isArray(incoming.subs)) state.subs = normalizeSubs(mergeRecords(state.subs, incoming.subs, 'name'));
-            if(Array.isArray(incoming.users)) state.users = mergeRecords(state.users, incoming.users, 'id');
+            if(Array.isArray(incoming.users)) state.users = mergedUsers;
             if(Array.isArray(incoming.notifications)) state.notifications = normalizeNotifications(mergeRecords(state.notifications, incoming.notifications, 'id'));
+            syncCurrentUserFromRecords();
             renderSubs();
             renderPosts();
             renderProfile();
@@ -2043,10 +2057,18 @@
     }
 
     function toggleSubscribe(subName){
-        if(!state.user.subscriptions) state.user.subscriptions = [];
-        const idx = state.user.subscriptions.indexOf(subName);
-        if(idx > -1) state.user.subscriptions.splice(idx,1);
-        else state.user.subscriptions.push(subName);
+        const normalizedSubName = normalizeSubName(subName);
+        if(!normalizedSubName || !state.subs.some(sub => sub.name === normalizedSubName)) return alert('Sub bulunamadı.');
+        if(!Array.isArray(state.user.subscriptions)) state.user.subscriptions = [];
+        const subscriptions = new Set(state.user.subscriptions.map(normalizeSubName).filter(Boolean));
+        if(subscriptions.has(normalizedSubName)) subscriptions.delete(normalizedSubName);
+        else subscriptions.add(normalizedSubName);
+        state.user.subscriptions = Array.from(subscriptions);
+
+        const currentUser = (state.users || []).find(user =>
+            (state.user.id && user.id === state.user.id) || user.name === state.user.name
+        );
+        if(currentUser) currentUser.subscriptions = state.user.subscriptions.slice();
         saveState();
         renderSubs();
     }
