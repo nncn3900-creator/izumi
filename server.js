@@ -10,7 +10,7 @@ const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, { cors: { origin: '*' } });
 app.use(cors());
-app.use(express.json({ limit: '20mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 io.on('connection', socket => {
   socket.on('join-feed', () => socket.join('feed'));
@@ -69,6 +69,21 @@ function mergeByKey(existing, incoming, key){
   return merged;
 }
 
+function mergePostRecords(existing, incoming){
+  const merged = mergeByKey(existing, incoming, 'id');
+  const existingById = new Map((Array.isArray(existing) ? existing : []).map(post => [post && post.id, post]));
+  const incomingById = new Map((Array.isArray(incoming) ? incoming : []).map(post => [post && post.id, post]));
+  return merged.map(post => {
+    const existingPost = existingById.get(post && post.id);
+    const incomingPost = incomingById.get(post && post.id);
+    if(!incomingPost || !Array.isArray(incomingPost.comments)) return post;
+    return {
+      ...post,
+      comments: mergeByKey(existingPost && existingPost.comments, incomingPost.comments, 'id')
+    };
+  });
+}
+
 function normalizeSubName(value){
   return String(value || '').trim().toLowerCase().replace(/\s+/g, '');
 }
@@ -95,7 +110,7 @@ function mergeState(current, incoming){
     ...previous,
     ...next,
     users: mergeByKey(previous.users, next.users, 'id'),
-    posts: mergeByKey(previous.posts, next.posts, 'id').filter(post => !deletedPostIds.includes(post.id)),
+    posts: mergePostRecords(previous.posts, next.posts).filter(post => !deletedPostIds.includes(post.id)),
     deletedPostIds,
     subs: normalizeSubs(mergeByKey(previous.subs, next.subs, 'name')),
     saved: Array.from(new Set([...(previous.saved || []), ...(next.saved || [])])),
@@ -222,6 +237,12 @@ app.post('/api/account/delete', (req, res)=>{
     console.error('POST /api/account/delete error:', e.message);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+app.use((error, req, res, next) => {
+  if(error && error.type === 'entity.too.large') return res.status(413).json({ error: 'payload_too_large', message: 'Gönderilen veri çok büyük.' });
+  if(error instanceof SyntaxError && error.status === 400 && error.body) return res.status(400).json({ error: 'invalid_json', message: 'Geçersiz JSON verisi.' });
+  next(error);
 });
 
 function getPublicBaseUrl(req){

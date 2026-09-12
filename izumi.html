@@ -1180,7 +1180,10 @@
         feedMode: 'all'
     };
 
-    function saveState() {
+    let stateSyncPromise = null;
+    let stateSyncQueued = false;
+
+    function persistLocalState() {
         localStorage.setItem('iz_user', JSON.stringify(state.user));
         localStorage.setItem('iz_subs', JSON.stringify(state.subs));
         localStorage.setItem('iz_posts', JSON.stringify(state.posts));
@@ -1191,8 +1194,27 @@
         localStorage.setItem('iz_users', JSON.stringify(state.users));
         localStorage.setItem('iz_notifications', JSON.stringify(state.notifications || []));
         localStorage.setItem('iz_language', state.language || 'tr');
-        // attempt to sync to server if available
-        try{ syncStateToServer(); }catch(e){ /* ignore */ }
+    }
+
+    function requestStateSync() {
+        if(stateSyncPromise){
+            stateSyncQueued = true;
+            return;
+        }
+        stateSyncQueued = false;
+        stateSyncPromise = syncStateToServer().finally(() => {
+            stateSyncPromise = null;
+            if(stateSyncQueued){
+                stateSyncQueued = false;
+                requestStateSync();
+            }
+        });
+    }
+
+    function saveState() {
+        persistLocalState();
+        stateSyncQueued = true;
+        requestStateSync();
     }
 
     const translations = {
@@ -1423,16 +1445,15 @@
             const deletedPostIds = new Set([...(state.deletedPostIds || []), ...(s.deletedPostIds || [])].map(Number));
             state.deletedPostIds = Array.from(deletedPostIds);
             if(Array.isArray(s.subs)) state.subs = normalizeSubs(mergeRecords(state.subs, s.subs, 'name'));
-            if(Array.isArray(s.posts)) state.posts = mergeRecords(state.posts, s.posts, 'id').filter(post => !deletedPostIds.has(Number(post.id)));
+            if(Array.isArray(s.posts)) state.posts = mergePostRecords(state.posts, s.posts).filter(post => !deletedPostIds.has(Number(post.id)));
             if(Array.isArray(s.users)) state.users = mergeRecords(state.users, s.users, 'id');
             if(Array.isArray(s.saved)) state.saved = Array.from(new Set([...(state.saved || []), ...s.saved]));
             if(Array.isArray(s.activeSubs)) state.activeSubs = Array.from(new Set([...(state.activeSubs || []), ...s.activeSubs]));
             if(Array.isArray(s.reports)) state.reports = mergeRecords(state.reports, s.reports, 'date');
             if(Array.isArray(s.notifications)) state.notifications = normalizeNotifications(mergeRecords(state.notifications, s.notifications, 'id'));
             state.user = localUser;
+            persistLocalState();
             console.log('State loaded from server');
-            // also persist locally
-            saveState();
         }catch(e){ 
             console.warn('loadStateFromServer failed (using local data):', e.message); 
         }
@@ -1454,6 +1475,18 @@
         return merged;
     }
 
+    function mergePostRecords(existing, incoming){
+        const merged = mergeRecords(existing, incoming, 'id');
+        const existingById = new Map((Array.isArray(existing) ? existing : []).map(post => [post && post.id, post]));
+        const incomingById = new Map((Array.isArray(incoming) ? incoming : []).map(post => [post && post.id, post]));
+        return merged.map(post => {
+            const existingPost = existingById.get(post && post.id);
+            const incomingPost = incomingById.get(post && post.id);
+            if(!incomingPost || !Array.isArray(incomingPost.comments)) return post;
+            return { ...post, comments: mergeRecords(existingPost && existingPost.comments, incomingPost.comments, 'id') };
+        });
+    }
+
     async function refreshStateFromServer(){
         try{
             const res = await fetch('/api/state', { cache: 'no-store' });
@@ -1463,9 +1496,10 @@
             const incoming = data.state;
             const deletedPostIds = new Set([...(state.deletedPostIds || []), ...(incoming.deletedPostIds || [])].map(Number));
             state.deletedPostIds = Array.from(deletedPostIds);
-            const changed = JSON.stringify(incoming.posts || []) !== JSON.stringify(state.posts || []) || JSON.stringify(incoming.subs || []) !== JSON.stringify(state.subs || []) || JSON.stringify(incoming.notifications || []) !== JSON.stringify(state.notifications || []);
+            const mergedPosts = Array.isArray(incoming.posts) ? mergePostRecords(state.posts, incoming.posts).filter(post => !deletedPostIds.has(Number(post.id))) : state.posts;
+            const changed = JSON.stringify(mergedPosts || []) !== JSON.stringify(state.posts || []) || JSON.stringify(incoming.subs || []) !== JSON.stringify(state.subs || []) || JSON.stringify(incoming.notifications || []) !== JSON.stringify(state.notifications || []);
             if(!changed) return;
-            if(Array.isArray(incoming.posts)) state.posts = mergeRecords(state.posts, incoming.posts, 'id').filter(post => !deletedPostIds.has(Number(post.id)));
+            if(Array.isArray(incoming.posts)) state.posts = mergedPosts;
             if(Array.isArray(incoming.subs)) state.subs = normalizeSubs(mergeRecords(state.subs, incoming.subs, 'name'));
             if(Array.isArray(incoming.users)) state.users = mergeRecords(state.users, incoming.users, 'id');
             if(Array.isArray(incoming.notifications)) state.notifications = normalizeNotifications(mergeRecords(state.notifications, incoming.notifications, 'id'));
@@ -2023,10 +2057,16 @@
     }
 
     function submitSub() {
-        const name = normalizeSubName(document.getElementById('sub-name').value);
-        const desc = document.getElementById('sub-desc').value.trim();
+        const nameInput = document.getElementById('sub-name');
+        const descInput = document.getElementById('sub-desc');
+        if(!nameInput || !descInput) return alert('Sub formu yüklenemedi. Sayfayı yenileyip tekrar deneyin.');
+        const rawName = nameInput.value.trim();
+        const name = normalizeSubName(rawName);
+        const desc = descInput.value.trim().slice(0, 500);
         if(!name) return alert('Sub adı boş olamaz!');
-        state.subs = normalizeSubs(state.subs);
+        if(rawName.length > 40) return alert('Sub adı en fazla 40 karakter olabilir.');
+        if(!/^[\p{L}\p{N}_-]+$/u.test(name)) return alert('Sub adı yalnızca harf, rakam, alt çizgi ve tire içerebilir.');
+        state.subs = normalizeSubs(Array.isArray(state.subs) ? state.subs : []);
         if(state.subs.some(s => normalizeSubName(s.name) === name)) return alert('Bu sub zaten var!');
 
         // assign owner as current user and default deletePermission
@@ -2035,8 +2075,8 @@
         saveState();
         renderSubs();
         closeModal('modal-sub');
-        document.getElementById('sub-name').value = '';
-        document.getElementById('sub-desc').value = '';
+        nameInput.value = '';
+        descInput.value = '';
     }
 
     function resetPostComposer(){
@@ -2214,6 +2254,11 @@
 
     function renderPosts(filteredList = null, title = null) {
         const container = document.getElementById('posts-container');
+        const draftValues = {};
+        ['new-comment-body-inline'].forEach(id => {
+            const field = document.getElementById(id);
+            if(field && field.value) draftValues[id] = field.value;
+        });
         container.innerHTML = '';
 
         let postsToRender = filteredList || state.posts.slice();
@@ -2309,6 +2354,11 @@
                     </div>
                 </div>
             `;
+        });
+
+        Object.entries(draftValues).forEach(([id, value]) => {
+            const field = document.getElementById(id);
+            if(field) field.value = value;
         });
         container.querySelectorAll('[data-username]').forEach(element => element.addEventListener('click', event => {
             event.stopPropagation();
