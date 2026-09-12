@@ -106,15 +106,25 @@ function mergeState(current, incoming){
     ...(previous.deletedPostIds || []),
     ...(next.deletedPostIds || [])
   ].map(id => Number(id)).filter(Number.isFinite)));
+  const deletedSubNames = Array.from(new Set([
+    ...(previous.deletedSubNames || []),
+    ...(next.deletedSubNames || [])
+  ].map(normalizeSubName).filter(Boolean)));
+  const isDeletedSub = sub => deletedSubNames.includes(normalizeSubName(sub && sub.name));
+  const isDeletedSubName = name => deletedSubNames.includes(normalizeSubName(name));
   return {
     ...previous,
     ...next,
-    users: mergeByKey(previous.users, next.users, 'id'),
     posts: mergePostRecords(previous.posts, next.posts).filter(post => !deletedPostIds.includes(post.id)),
     deletedPostIds,
-    subs: normalizeSubs(mergeByKey(previous.subs, next.subs, 'name')),
+    deletedSubNames,
+    subs: normalizeSubs(mergeByKey(previous.subs, next.subs, 'name')).filter(sub => !isDeletedSub(sub)),
     saved: Array.from(new Set([...(previous.saved || []), ...(next.saved || [])])),
-    activeSubs: Array.from(new Set([...(previous.activeSubs || []), ...(next.activeSubs || [])])),
+    activeSubs: Array.from(new Set([...(previous.activeSubs || []), ...(next.activeSubs || [])])).filter(name => !isDeletedSubName(name)),
+    users: mergeByKey(previous.users, next.users, 'id').map(user => ({
+      ...user,
+      subscriptions: (user.subscriptions || []).map(normalizeSubName).filter(name => !isDeletedSubName(name))
+    })),
     reports: mergeByKey(previous.reports, next.reports, 'date'),
     notifications: normalizeNotifications(mergeByKey(previous.notifications, next.notifications, 'id'))
   };

@@ -1175,6 +1175,7 @@
         ],
         posts: JSON.parse(localStorage.getItem('iz_posts')) || [],
         deletedPostIds: JSON.parse(localStorage.getItem('iz_deleted_post_ids')) || [],
+        deletedSubNames: JSON.parse(localStorage.getItem('iz_deleted_sub_names')) || [],
         saved: JSON.parse(localStorage.getItem('iz_saved')) || [],
         reports: JSON.parse(localStorage.getItem('iz_reports')) || [],
         activeSubs: JSON.parse(localStorage.getItem('iz_active_subs')) || [],
@@ -1194,6 +1195,7 @@
         localStorage.setItem('iz_subs', JSON.stringify(state.subs));
         localStorage.setItem('iz_posts', JSON.stringify(state.posts));
         localStorage.setItem('iz_deleted_post_ids', JSON.stringify(state.deletedPostIds || []));
+        localStorage.setItem('iz_deleted_sub_names', JSON.stringify(state.deletedSubNames || []));
         localStorage.setItem('iz_saved', JSON.stringify(state.saved));
         localStorage.setItem('iz_reports', JSON.stringify(state.reports || []));
         localStorage.setItem('iz_active_subs', JSON.stringify(state.activeSubs || []));
@@ -1449,16 +1451,20 @@
             const s = data.state;
             const localUser = state.user;
             const deletedPostIds = new Set([...(state.deletedPostIds || []), ...(s.deletedPostIds || [])].map(Number));
+            const deletedSubNames = new Set([...(state.deletedSubNames || []), ...(s.deletedSubNames || [])].map(normalizeSubName).filter(Boolean));
             state.deletedPostIds = Array.from(deletedPostIds);
-            if(Array.isArray(s.subs)) state.subs = normalizeSubs(mergeRecords(state.subs, s.subs, 'name'));
+            state.deletedSubNames = Array.from(deletedSubNames);
+            if(Array.isArray(s.subs)) state.subs = normalizeSubs(mergeRecords(state.subs, s.subs, 'name')).filter(sub => !deletedSubNames.has(normalizeSubName(sub.name)));
             if(Array.isArray(s.posts)) state.posts = mergePostRecords(state.posts, s.posts).filter(post => !deletedPostIds.has(Number(post.id)));
             if(Array.isArray(s.users)) state.users = mergeRecords(state.users, s.users, 'id');
             if(Array.isArray(s.saved)) state.saved = Array.from(new Set([...(state.saved || []), ...s.saved]));
-            if(Array.isArray(s.activeSubs)) state.activeSubs = Array.from(new Set([...(state.activeSubs || []), ...s.activeSubs]));
+            if(Array.isArray(s.activeSubs)) state.activeSubs = Array.from(new Set([...(state.activeSubs || []), ...s.activeSubs])).filter(name => !deletedSubNames.has(normalizeSubName(name)));
             if(Array.isArray(s.reports)) state.reports = mergeRecords(state.reports, s.reports, 'date');
             if(Array.isArray(s.notifications)) state.notifications = normalizeNotifications(mergeRecords(state.notifications, s.notifications, 'id'));
             state.user = localUser;
             syncCurrentUserFromRecords();
+            state.user.subscriptions = (state.user.subscriptions || []).filter(name => !deletedSubNames.has(normalizeSubName(name)));
+            state.users = (state.users || []).map(user => ({ ...user, subscriptions: (user.subscriptions || []).filter(name => !deletedSubNames.has(normalizeSubName(name))) }));
             persistLocalState();
             console.log('State loaded from server');
         }catch(e){ 
@@ -1512,13 +1518,17 @@
             if(!data || !data.state) return;
             const incoming = data.state;
             const deletedPostIds = new Set([...(state.deletedPostIds || []), ...(incoming.deletedPostIds || [])].map(Number));
+            const deletedSubNames = new Set([...(state.deletedSubNames || []), ...(incoming.deletedSubNames || [])].map(normalizeSubName).filter(Boolean));
             state.deletedPostIds = Array.from(deletedPostIds);
+            state.deletedSubNames = Array.from(deletedSubNames);
             const mergedPosts = Array.isArray(incoming.posts) ? mergePostRecords(state.posts, incoming.posts).filter(post => !deletedPostIds.has(Number(post.id))) : state.posts;
             const mergedUsers = Array.isArray(incoming.users) ? mergeRecords(state.users, incoming.users, 'id') : state.users;
-            const changed = JSON.stringify(mergedPosts || []) !== JSON.stringify(state.posts || []) || JSON.stringify(incoming.subs || []) !== JSON.stringify(state.subs || []) || JSON.stringify(incoming.notifications || []) !== JSON.stringify(state.notifications || []) || JSON.stringify(mergedUsers || []) !== JSON.stringify(state.users || []);
+            const mergedSubs = Array.isArray(incoming.subs) ? normalizeSubs(mergeRecords(state.subs, incoming.subs, 'name')).filter(sub => !deletedSubNames.has(normalizeSubName(sub.name))) : state.subs;
+            const changed = JSON.stringify(mergedPosts || []) !== JSON.stringify(state.posts || []) || JSON.stringify(mergedSubs || []) !== JSON.stringify(state.subs || []) || JSON.stringify(incoming.notifications || []) !== JSON.stringify(state.notifications || []) || JSON.stringify(mergedUsers || []) !== JSON.stringify(state.users || []);
             if(!changed) return;
             if(Array.isArray(incoming.posts)) state.posts = mergedPosts;
-            if(Array.isArray(incoming.subs)) state.subs = normalizeSubs(mergeRecords(state.subs, incoming.subs, 'name'));
+            if(Array.isArray(incoming.subs)) state.subs = mergedSubs;
+            if(Array.isArray(incoming.activeSubs)) state.activeSubs = Array.from(new Set([...(state.activeSubs || []), ...incoming.activeSubs])).filter(name => !deletedSubNames.has(normalizeSubName(name)));
             if(Array.isArray(incoming.users)) state.users = mergedUsers;
             if(Array.isArray(incoming.notifications)) state.notifications = normalizeNotifications(mergeRecords(state.notifications, incoming.notifications, 'id'));
             syncCurrentUserFromRecords();
@@ -1861,24 +1871,26 @@
     }
 
     function deleteSub(subName){
-        const sub = state.subs.find(s=>s.name===subName);
+        const normalizedSubName = normalizeSubName(subName);
+        const sub = state.subs.find(s=>normalizeSubName(s.name)===normalizedSubName);
         if(!sub) return alert('Sub bulunamadı');
         const isOwner = sub.owner && state.user && state.user.name && sub.owner === state.user.name;
         const allowedToDelete = isOwner || (sub.deletePermission && sub.deletePermission === 'anyone');
         if(!allowedToDelete) return alert('Bu subu silme yetkiniz yok.');
         if(!confirm(`i/${subName} silinecek. Bu işlem geri alınamaz. Devam edilsin mi?`)) return;
         // remove from subs
-        state.subs = state.subs.filter(s => s.name !== subName);
+        state.deletedSubNames = Array.from(new Set([...(state.deletedSubNames || []), normalizedSubName]));
+        state.subs = state.subs.filter(s => normalizeSubName(s.name) !== normalizedSubName);
         // remove posts in that sub
         const before = state.posts.length;
-        state.posts = state.posts.filter(p => p.sub !== subName);
+        state.posts = state.posts.filter(p => normalizeSubName(p.sub) !== normalizedSubName);
         const removed = before - state.posts.length;
         // remove subscription references from users
-        state.users = (state.users || []).map(u => ({ ...u, subscriptions: (u.subscriptions || []).filter(x => x !== subName) }));
+        state.users = (state.users || []).map(u => ({ ...u, subscriptions: (u.subscriptions || []).filter(x => normalizeSubName(x) !== normalizedSubName) }));
         // if current user had it, update
-        if(state.user && state.user.subscriptions) state.user.subscriptions = state.user.subscriptions.filter(x => x !== subName);
+        if(state.user && state.user.subscriptions) state.user.subscriptions = state.user.subscriptions.filter(x => normalizeSubName(x) !== normalizedSubName);
         // remove from activeSubs if present
-        if(state.activeSubs) state.activeSubs = state.activeSubs.filter(s => s !== subName);
+        if(state.activeSubs) state.activeSubs = state.activeSubs.filter(s => normalizeSubName(s) !== normalizedSubName);
         saveState();
         renderSubs();
         renderPosts();
@@ -2103,6 +2115,7 @@
         if(!/^[\p{L}\p{N}_-]+$/u.test(name)) return alert('Sub adı yalnızca harf, rakam, alt çizgi ve tire içerebilir.');
         state.subs = normalizeSubs(Array.isArray(state.subs) ? state.subs : []);
         if(state.subs.some(s => normalizeSubName(s.name) === name)) return alert('Bu sub zaten var!');
+        state.deletedSubNames = (state.deletedSubNames || []).filter(deletedName => normalizeSubName(deletedName) !== name);
 
         // assign owner as current user and default deletePermission
         const owner = state.user && state.user.name ? state.user.name : 'system';
