@@ -404,30 +404,27 @@
             animation: modal-enter .22s cubic-bezier(.2,.75,.25,1) both;
         }
 
-        .auth-tabs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            padding: 4px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
+        /* Auth: tek ana işlem, diğer seçenek küçük geçiş butonu */
+        .auth-switch {
+            display: flex;
+            justify-content: center;
+            margin-top: 2px;
         }
 
-        .auth-tab {
+        .auth-switch button {
             border: 0;
             background: transparent;
             color: var(--text-muted);
-            padding: 9px 12px;
-            border-radius: 8px;
+            padding: 5px 8px;
+            border-radius: 6px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.78rem;
+            transition: color 0.2s ease, background 0.2s ease;
         }
 
-        .auth-tab.active {
-            background: var(--bg-hover);
+        .auth-switch button:hover {
             color: var(--text-main);
+            background: var(--bg-tertiary);
         }
 
         .auth-stack {
@@ -941,7 +938,8 @@
         <div style="padding:8px 12px; color:var(--text-muted); font-size:0.9rem; display:flex; align-items:center; gap:8px;"><span data-i18n="session">Oturum</span>: <div id="current-user-avatar" style="width:28px; height:28px; border-radius:6px; background:var(--muted-bg); display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem">A</div> <span id="current-user">Anon</span></div>
         <a class="nav-link active" onclick="filterFeed('all')"><i class="fa-solid fa-house"></i> <span data-i18n="home">Ana Akış</span></a>
         <a class="nav-link" onclick="openNotifications()"><i class="fa-solid fa-bell"></i> <span data-i18n="notifications">Bildirimler</span> <span id="notification-count" class="notification-badge" style="display:none">0</span></a>
-        <a class="nav-link" onclick="openModal('modal-login')"><i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="loginAccounts">Oturum Aç / Hesaplar</span></a>
+        <a class="nav-link" onclick="openAuthModal('login')"><i class="fa-solid fa-right-to-bracket"></i> <span>Oturum Aç</span></a>
+        <a class="nav-link" onclick="openAuthModal('register')"><i class="fa-solid fa-user-plus"></i> <span>Kayıt Ol</span></a>
         <a class="nav-link" onclick="openModal('modal-sub')"><i class="fa-solid fa-plus"></i> <span data-i18n="createSub">Sub Oluştur</span></a>
         <a class="nav-link" onclick="openModal('modal-profile')"><i class="fa-solid fa-user-gear"></i> <span data-i18n="profileSettings">Profil Ayarları</span></a>
         <a class="nav-link" onclick="openModal('modal-settings')"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">Ayarlar</span></a>
@@ -1068,7 +1066,8 @@
     <a class="nav-link" onclick="closeMobileMenu(); filterFeed('all')"><i class="fa-solid fa-house"></i> <span data-i18n="home">Ana Akış</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); setFeedMode('discover')"><i class="fa-solid fa-compass"></i> <span data-i18n="discover">Keşfet</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); openNotifications()"><i class="fa-solid fa-bell"></i> <span data-i18n="notifications">Bildirimler</span></a>
-    <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-login')"><i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="loginAccounts">Oturum Aç / Hesaplar</span></a>
+    <a class="nav-link" onclick="closeMobileMenu(); openAuthModal('login')"><i class="fa-solid fa-right-to-bracket"></i> <span>Oturum Aç</span></a>
+    <a class="nav-link" onclick="closeMobileMenu(); openAuthModal('register')"><i class="fa-solid fa-user-plus"></i> <span>Kayıt Ol</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> <span data-i18n="createSub">Sub Oluştur</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-profile')"><i class="fa-solid fa-user-gear"></i> <span data-i18n="profileSettings">Profil Ayarları</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-settings')"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">Ayarlar</span></a>
@@ -1266,23 +1265,30 @@
     </div>
 </div>
 
-<!-- LOGIN / ACCOUNTS MODAL -->
+<!-- AUTH MODAL -->
 <div class="modal-overlay" id="modal-login" aria-hidden="true">
     <div class="modal" role="dialog" aria-labelledby="login-title" aria-modal="true">
         <div class="modal-header">
-            <span id="login-title" data-i18n="loginTitle">Oturum</span>
+            <span id="login-title">Oturum Aç</span>
             <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-login')"></i>
         </div>
-        <div class="auth-tabs" role="tablist">
-            <button type="button" class="auth-tab active" data-auth-tab="login" onclick="setAuthTab('login')" data-i18n="login">Oturum Aç</button>
-            <button type="button" class="auth-tab" data-auth-tab="register" onclick="setAuthTab('register')">Hesap Oluştur</button>
-        </div>
-        <div class="auth-stack" data-auth-panel="login">
+
+        <div class="auth-stack">
             <input class="input-field" id="login-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
             <input class="input-field" id="login-password" type="password" placeholder="Parola" data-placeholder-tr="Parola" data-placeholder-en="Password">
-            <button class="btn-primary" onclick="loginSelected()" data-i18n="login">Oturum Aç</button>
+            <button class="btn-primary" onclick="loginSelected()">Oturum Aç</button>
         </div>
-        <div class="auth-stack" data-auth-panel="register" hidden>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-register" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="register-title" aria-modal="true">
+        <div class="modal-header">
+            <span id="register-title">Kayıt Ol</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-register')"></i>
+        </div>
+
+        <div class="auth-stack">
             <div style="font-size:0.85rem; color:var(--text-muted);" data-i18n="createAccountHint">Parola en az 8 karakter olmalı; büyük/küçük harf, rakam ve özel karakter içermeli.</div>
             <input class="input-field" id="new-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
             <input class="input-field" id="new-password" type="password" placeholder="Parola (güçlü olmalı)" data-placeholder-tr="Parola (güçlü olmalı)" data-placeholder-en="Password (must be strong)">
@@ -2005,16 +2011,19 @@
     let activeSubContext = null; // when a sub is active (user clicked into a sub), use it for post creation
 
     function setAuthTab(tab){
+        // Oturum açma ve kayıt olma artık tamamen ayrı pencereler.
+        // Eski sekme sistemi kullanılmıyor.
         const selected = tab === 'register' ? 'register' : 'login';
-        document.querySelectorAll('[data-auth-tab]').forEach(button => button.classList.toggle('active', button.dataset.authTab === selected));
-        document.querySelectorAll('[data-auth-panel]').forEach(panel => { panel.hidden = panel.dataset.authPanel !== selected; });
-        const title = document.getElementById('login-title');
-        if(title) title.textContent = selected === 'register' ? 'Hesap Oluştur' : t('loginTitle');
+        openModal(selected === 'register' ? 'modal-register' : 'modal-login');
+    }
+
+    function openAuthModal(mode){
+        const target = mode === 'register' ? 'modal-register' : 'modal-login';
+        openModal(target);
     }
 
     function openModal(id) { 
         if(id === 'modal-post') preparePostModal();
-        if(id === 'modal-login') setAuthTab('login');
         const modal = document.getElementById(id);
         if(!modal) return;
         if(id === 'modal-profile') cleanupProfilePanelText();
