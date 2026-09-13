@@ -1425,6 +1425,23 @@
     let stateSyncPromise = null;
     let stateSyncQueued = false;
 
+    // --- Auth token handling ---------------------------------------------
+    // Accounts are now authenticated by the server (bcrypt + a random session
+    // token), not by comparing a client-computed hash. The token is opaque and
+    // only useful together with the server's session store - it replaces the
+    // old model where state.user.pass itself acted as a bearer credential.
+    let authToken = localStorage.getItem('iz_token') || null;
+
+    function setAuthToken(token){
+        authToken = token || null;
+        if(authToken) localStorage.setItem('iz_token', authToken);
+        else localStorage.removeItem('iz_token');
+    }
+
+    function authHeaders(extra = {}){
+        return authToken ? { ...extra, 'Authorization': `Bearer ${authToken}` } : extra;
+    }
+
     function showToast(message, type = 'info'){
         let region = document.querySelector('.toast-region');
         if(!region){
@@ -1917,14 +1934,28 @@
             const name = document.getElementById('new-username').value.trim();
             const pass = document.getElementById('new-password').value || '';
             if(!name) return alert('Rumuz gerekli');
-            const nameTaken = (state.users || []).some(user => normalizeUsername(user.name) === normalizeUsername(name));
-            if(nameTaken) return alert('Bu rumuz zaten kullanılıyor. Lütfen başka bir rumuz seçin.');
             const strong = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/;
             if(!strong.test(pass)) return alert('Parola çok zayıf. En az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermeli.');
-            const hashed = await hashPassword(pass);
-            const user = { id: Date.now(), createdAt: Date.now(), name, pass: hashed, bio: '', karma: 1, votes: {}, subscriptions: [], settings: {} };
-            state.users.push(user);
-            state.user = user;
+            let response, data;
+            try{
+                response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: name, password: pass })
+                });
+                data = await response.json().catch(() => ({}));
+            }catch(error){
+                return alert('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+            }
+            if(!response.ok){
+                if(data.error === 'username_taken') return alert('Bu rumuz zaten kullanılıyor. Lütfen başka bir rumuz seçin.');
+                if(data.error === 'weak_password') return alert('Parola çok zayıf. En az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermeli.');
+                return alert('Hesap oluşturulamadı. Lütfen tekrar deneyin.');
+            }
+            setAuthToken(data.token);
+            state.users = state.users || [];
+            state.users.push(data.user);
+            state.user = data.user;
             saveState();
             renderProfile();
             populateAccountsSelect();
@@ -1937,23 +1968,27 @@
         (async ()=>{
             const name = document.getElementById('login-username').value.trim();
             if(!name) return alert('Rumuz girin');
-            const user = (state.users || []).find(u => normalizeUsername(u.name) === normalizeUsername(name));
-            if(!user) return alert('Hesap bulunamadı');
             const entered = document.getElementById('login-password').value || '';
             if(!entered) return alert('Parola girin');
-            // determine if stored pass is hashed (hex SHA-256)
-            const isHashed = typeof user.pass === 'string' && /^[0-9a-f]{64}$/.test(user.pass);
-            if(isHashed){
-                const h = await hashPassword(entered);
-                if(h !== user.pass) return alert('Parola yanlış');
-            } else {
-                // legacy plaintext: compare and upgrade to hashed
-                if(entered !== user.pass) return alert('Parola yanlış');
-                const newHash = await hashPassword(entered);
-                user.pass = newHash;
+            let response, data;
+            try{
+                response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: name, password: entered })
+                });
+                data = await response.json().catch(() => ({}));
+            }catch(error){
+                return alert('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
             }
-            state.user = user;
-            // if user opted for autoLogin earlier, persist current user id
+            if(!response.ok){
+                if(data.error === 'user_not_found') return alert('Hesap bulunamadı');
+                if(data.error === 'too_many_attempts') return alert('Çok fazla başarısız deneme. Lütfen biraz sonra tekrar deneyin.');
+                return alert('Parola yanlış');
+            }
+            setAuthToken(data.token);
+            state.user = data.user;
+            state.users = mergeRecords(state.users, [data.user], 'id');
             saveState();
             renderProfile();
             closeModal('modal-login');
@@ -1962,6 +1997,10 @@
     }
 
     function logout(){
+        if(authToken){
+            fetch('/api/auth/logout', { method: 'POST', headers: authHeaders() }).catch(() => {});
+        }
+        setAuthToken(null);
         state.user = { name: 'Anon' + Math.floor(Math.random()*1000), bio: 'Özgür anonim kullanıcı.', karma: 1, votes: {}, subscriptions: [], settings: {} };
         saveState();
         renderProfile();
@@ -1977,18 +2016,18 @@
 
     async function deleteAccount(){
         const account = state.user || {};
-        if(!account.id || !account.pass) return alert('Kalıcı silme için parola ile oluşturulmuş bir hesaba giriş yapmalısınız.');
+        if(!account.id || !authToken) return alert('Kalıcı silme için parola ile oluşturulmuş bir hesaba giriş yapmalısınız.');
         if(!confirm('Hesabınız, postlarınız, yorumlarınız ve sahip olduğunuz sublar kalıcı olarak silinecek. Devam edilsin mi?')) return;
         try{
             const response = await fetch('/api/account/delete', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: account.id, username: account.name, passwordHash: account.pass })
+                headers: authHeaders({ 'Content-Type': 'application/json' })
             });
             if(!response.ok) throw new Error('Sunucu hesabı silemedi.');
         }catch(error){
             return alert(`${error.message} İnternet bağlantısını kontrol edin.`);
         }
+        setAuthToken(null);
         ['iz_user', 'iz_posts', 'iz_subs', 'iz_saved', 'iz_reports', 'iz_active_subs', 'iz_users'].forEach(key => localStorage.removeItem(key));
         state.user = { name: 'Anon' + Math.floor(Math.random() * 1000), bio: 'Özgür anonim kullanıcı.', karma: 1, votes: {}, subscriptions: [], settings: {} };
         state.posts = state.posts.filter(post => post.authorId !== account.id && post.author !== account.name);
@@ -2000,14 +2039,6 @@
         setProfileTab('subs');
         renderPosts();
         alert('Hesabınız kalıcı olarak silindi.');
-    }
-
-    async function hashPassword(pass){
-        const enc = new TextEncoder();
-        const data = enc.encode(pass);
-        const hash = await crypto.subtle.digest('SHA-256', data);
-        const arr = Array.from(new Uint8Array(hash));
-        return arr.map(b=>b.toString(16).padStart(2,'0')).join('');
     }
 
     function evaluatePasswordStrength(p){
@@ -2133,7 +2164,7 @@
         // render active subscriptions
         const subList = document.getElementById('user-subs-list');
         if(subList){ subList.innerHTML = '';
-            (state.user.subscriptions || []).forEach(s => { const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.innerHTML = `<div>i/${s}</div><button class='btn-secondary' onclick="toggleSubscribe('${s}')">${t('leave')}</button>`; subList.appendChild(div); });
+            (state.user.subscriptions || []).forEach(s => { const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.innerHTML = `<div>i/${escapeHtml(s)}</div><button class='btn-secondary' data-unsub="${escapeHtml(s)}">${t('leave')}</button>`; div.querySelector('[data-unsub]').addEventListener('click', () => toggleSubscribe(s)); subList.appendChild(div); });
             if((state.user.subscriptions||[]).length === 0) subList.innerHTML = '<div style="color:var(--text-muted)">Henüz katıldığınız bir topluluk yok</div>';
         }
         // render owned subs management (transfer owner, set delete permission)
@@ -2201,7 +2232,7 @@
                     item.style.display = 'flex'; item.style.justifyContent='space-between'; item.style.alignItems='center';
                     item.style.padding = '6px'; item.style.borderBottom = '1px solid var(--border-color)';
                     const left = document.createElement('div'); left.style.flex='1'; left.style.marginRight='8px';
-                    left.innerHTML = `<div style="font-weight:600">${post.title}</div><div style="font-size:0.85rem; color:var(--text-muted)">${post.author} • ${post.date}</div>`;
+                    left.innerHTML = `<div style="font-weight:600">${escapeHtml(post.title)}</div><div style="font-size:0.85rem; color:var(--text-muted)">${escapeHtml(post.author)} • ${escapeHtml(post.date)}</div>`;
                     const actions = document.createElement('div'); actions.style.display='flex'; actions.style.gap='6px';
                     const openBtn = document.createElement('button'); openBtn.className='btn-secondary'; openBtn.textContent='Aç'; openBtn.onclick = ()=>{ closeModal('modal-profile'); openComments(post.id); };
                     const removeBtn = document.createElement('button'); removeBtn.className='btn-secondary'; removeBtn.textContent='Kaldır'; removeBtn.onclick = ()=>{ removeSaved(post.id); };
@@ -2217,7 +2248,7 @@
             (state.posts || []).forEach(post => (post.comments || []).forEach(comment => {
                 if(comment.author === state.user.name) myComments.push({ post, comment });
             }));
-            commentsList.innerHTML = myComments.length ? myComments.slice().reverse().map(item => `<div class="comment-card" style="cursor:pointer" onclick="closeModal('modal-profile'); openComments(${item.post.id})"><b>${item.comment.body}</b><div class="comment-meta">${item.post.title}</div></div>`).join('') : '<div style="color:var(--text-muted)">Henüz yorumunuz yok.</div>';
+            commentsList.innerHTML = myComments.length ? myComments.slice().reverse().map(item => `<div class="comment-card" style="cursor:pointer" onclick="closeModal('modal-profile'); openComments(${item.post.id})"><b>${escapeHtml(item.comment.body)}</b><div class="comment-meta">${escapeHtml(item.post.title)}</div></div>`).join('') : '<div style="color:var(--text-muted)">Henüz yorumunuz yok.</div>';
         }
         // settings
         const showProf = state.user.settings && state.user.settings.showProfile;
@@ -2263,15 +2294,21 @@
             // show delete button only if allowed by permission
             subList.innerHTML += `
                 <div class="sub-row">
-                    <div class="nav-link" data-context-sub="${escapeHtml(s.name)}" onclick="filterFeed('${escapeHtml(s.name)}')">${avatar}<i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>
+                    <div class="nav-link" data-context-sub="${escapeHtml(s.name)}" data-filter-sub="${escapeHtml(s.name)}">${avatar}<i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>
                     <div class="sub-row-actions">
-                        <button class="btn-secondary" onclick="toggleSubscribe('${escapeHtml(s.name)}')">${isSub ? t('leave') : t('join')}</button>
-                        ${canManage ? `<button class="btn-secondary sub-gear-btn" title="Sub özellikleri" onclick="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-gear"></i></button>` : ''}
+                        <button class="btn-secondary" data-toggle-sub="${escapeHtml(s.name)}">${isSub ? t('leave') : t('join')}</button>
+                        ${canManage ? `<button class="btn-secondary sub-gear-btn" title="Sub özellikleri" data-gear-sub="${escapeHtml(s.name)}"><i class="fa-solid fa-gear"></i></button>` : ''}
                     </div>
                 </div>
             `;
-            select.innerHTML += `<option value="${s.name}">i/${s.name}</option>`;
+            const option = document.createElement('option');
+            option.value = s.name;
+            option.text = 'i/' + s.name;
+            select.appendChild(option);
         });
+        // Sub names are only ever attached via data-* attributes and read back
+        // through .dataset, never interpolated into an inline onclick string -
+        // that avoids a JS-string-breakout even if a name ever contained a quote.
         subList.querySelectorAll('[data-context-sub]').forEach(element => {
             element.addEventListener('contextmenu', event => {
                 event.preventDefault();
@@ -2279,6 +2316,9 @@
                 openSubProperties(event, element.dataset.contextSub);
             });
         });
+        subList.querySelectorAll('[data-filter-sub]').forEach(element => element.addEventListener('click', () => filterFeed(element.dataset.filterSub)));
+        subList.querySelectorAll('[data-toggle-sub]').forEach(element => element.addEventListener('click', () => toggleSubscribe(element.dataset.toggleSub)));
+        subList.querySelectorAll('[data-gear-sub]').forEach(element => element.addEventListener('click', event => openSubProperties(event, element.dataset.gearSub)));
     }
 
     function openMobileSubs(mode = 'popular'){
@@ -2322,9 +2362,11 @@
         list.forEach(s => {
             const el = document.createElement('div');
             el.style.display = 'flex'; el.style.justifyContent='space-between'; el.style.alignItems='center'; el.style.gap='8px';
-            el.innerHTML = `<div class="nav-link" style="padding:6px 8px;" onclick="filterFeed('${s}')">i/${s}</div><button class="btn-secondary" onclick="activeSubContext='${s}'; openPostComposer();">Bu Subda Paylaş</button>`;
+            el.innerHTML = `<div class="nav-link" style="padding:6px 8px;" data-active-sub-filter="${escapeHtml(s)}">i/${escapeHtml(s)}</div><button class="btn-secondary" data-active-sub-post="${escapeHtml(s)}">Bu Subda Paylaş</button>`;
             container.appendChild(el);
         });
+        container.querySelectorAll('[data-active-sub-filter]').forEach(element => element.addEventListener('click', () => filterFeed(element.dataset.activeSubFilter)));
+        container.querySelectorAll('[data-active-sub-post]').forEach(element => element.addEventListener('click', () => { activeSubContext = element.dataset.activeSubPost; openPostComposer(); }));
     }
 
     function deleteSub(subName){
@@ -3197,16 +3239,12 @@
         const isAuthor = (post.authorId && state.user.id && post.authorId === state.user.id) || (!post.authorId && post.author === state.user.name);
         if(!isAuthor) return alert('Sadece kendi gönderini silebilirsin.');
         if(!confirm('Gönderiyi silmek istediğine emin misin?')) return;
-        if(!state.user.id || !state.user.pass) return alert('Bu işlem için kayıtlı hesabınızla giriş yapmalısınız.');
+        if(!state.user.id || !authToken) return alert('Bu işlem için kayıtlı hesabınızla giriş yapmalısınız.');
 
         fetch(`/api/post/${encodeURIComponent(id)}`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: state.user.id,
-                username: state.user.name,
-                passwordHash: state.user.pass
-            })
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ postId: id })
         }).then(async response => {
             const data = await response.json().catch(() => ({}));
             if(!response.ok && data.error !== 'post_not_found') {
