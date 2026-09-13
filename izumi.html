@@ -1208,6 +1208,7 @@
         </div>
         <div class="profile-tabs" role="tablist" aria-label="Profil bölümleri">
             <button type="button" class="profile-tab active" data-profile-tab="subs" onclick="setProfileTab('subs')" data-i18n="joinedSubs">Katıldıklarım</button>
+            <button type="button" class="profile-tab" data-profile-tab="owned" onclick="setProfileTab('owned')" data-i18n="ownedSubs">Sahip Olduğum Sub'lar</button>
             <button type="button" class="profile-tab" data-profile-tab="saved" onclick="setProfileTab('saved')" data-i18n="savedPosts">Kaydettiklerim</button>
             <button type="button" class="profile-tab" data-profile-tab="comments" onclick="setProfileTab('comments')" data-i18n="myComments">Yorumlarım</button>
             <button type="button" class="profile-tab" data-profile-tab="settings" onclick="setProfileTab('settings')" data-i18n="settings">Ayarlar</button>
@@ -1220,9 +1221,9 @@
             <h4 style="margin:0 0 8px 0" data-i18n="savedPosts">Kaydedilen Gönderiler</h4>
             <div id="user-saved-list" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow:auto; padding-right:6px"></div>
         </div>
-        <div style="margin-top:12px;" data-profile-panel="subs">
+        <div style="margin-top:12px;" data-profile-panel="owned">
             <h4 style="margin:0 0 8px 0" data-i18n="ownedSubs">Sahip Olduğum Sub'lar</h4>
-            <div id="owned-subs-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px"></div>
+            <div id="owned-subs-list" style="display:flex; flex-direction:column; gap:12px; max-height:360px; overflow:auto; padding-right:6px"></div>
         </div>
         <div style="margin-top:12px;" data-profile-panel="comments">
             <h4 style="margin:0 0 8px 0" data-i18n="myComments">Yorumlarım</h4>
@@ -2119,21 +2120,46 @@
         if(ownedDiv){ ownedDiv.innerHTML = ''; const owned = state.subs.filter(s=> s.owner === state.user.name);
             if(owned.length === 0) ownedDiv.innerHTML = '<div style="color:var(--text-muted)">Hiç sub sahibi değilsiniz</div>';
             owned.forEach(s=>{
-                const row = document.createElement('div'); row.style.display='flex'; row.style.flexDirection='column'; row.style.gap='6px'; row.style.padding='6px'; row.style.borderBottom='1px solid var(--border-color)';
-                const top = document.createElement('div'); top.style.display='flex'; top.style.justifyContent='space-between'; top.innerHTML = `<div style="font-weight:600">i/${s.name}</div><div style="font-size:0.85rem; color:var(--text-muted)">İzin: ${s.deletePermission || 'owner'}</div>`;
-                const controls = document.createElement('div'); controls.style.display='flex'; controls.style.gap='8px';
-                // transfer owner select
+                const card = document.createElement('div'); card.className = 'owned-sub-card';
+
+                const header = document.createElement('div'); header.className = 'owned-sub-card-header';
+                header.innerHTML = `<div style="font-weight:600"><i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>`;
+                card.appendChild(header);
+
+                // --- Transfer ownership ---
+                const transferField = document.createElement('div'); transferField.className = 'owned-sub-field';
+                transferField.innerHTML = '<label>Sahipliği Devret</label>';
+                const transferRow = document.createElement('div'); transferRow.className = 'owned-sub-action-row';
                 const select = document.createElement('select'); select.className='select-field';
-                const defaultOpt = document.createElement('option'); defaultOpt.value=''; defaultOpt.text='Sahip değiştir'; select.appendChild(defaultOpt);
+                const defaultOpt = document.createElement('option'); defaultOpt.value=''; defaultOpt.text='Yeni sahip seçin'; select.appendChild(defaultOpt);
                 (state.users || []).forEach(u=>{ const o = document.createElement('option'); o.value = u.name; o.text = u.name; select.appendChild(o); });
-                const transferBtn = document.createElement('button'); transferBtn.className='btn-secondary'; transferBtn.textContent='Transfer'; transferBtn.onclick = ()=>{ const newOwner = select.value; if(!newOwner) return alert('Yeni sahip seçin'); transferOwnership(s.name, newOwner); };
+                const transferBtn = document.createElement('button'); transferBtn.className='btn-secondary'; transferBtn.textContent='Transfer Et'; transferBtn.onclick = ()=>{ const newOwner = select.value; if(!newOwner) return alert('Yeni sahip seçin'); transferOwnership(s.name, newOwner); };
+                transferRow.appendChild(select); transferRow.appendChild(transferBtn);
+                transferField.appendChild(transferRow);
+                card.appendChild(transferField);
+
+                // --- Post delete permission ---
+                const permField = document.createElement('div'); permField.className = 'owned-sub-field';
+                permField.innerHTML = `<label>Gönderi Silme İzni <span style="color:var(--text-muted); font-weight:400;">(şu an: ${s.deletePermission === 'anyone' ? 'Herkes' : 'Sadece Sahip'})</span></label>`;
+                const permRow = document.createElement('div'); permRow.className = 'owned-sub-action-row';
                 const permSelect = document.createElement('select'); permSelect.className='select-field'; permSelect.innerHTML = `<option value="owner" ${ (s.deletePermission==='owner') ? 'selected' : '' }>Sadece Sahip</option><option value="anyone" ${(s.deletePermission==='anyone') ? 'selected' : ''}>Herkes</option>`;
                 const permBtn = document.createElement('button'); permBtn.className='btn-secondary'; permBtn.textContent='Kaydet'; permBtn.onclick = ()=>{ setSubDeletePermission(s.name, permSelect.value); };
-                // comment delete permission select
+                permRow.appendChild(permSelect); permRow.appendChild(permBtn);
+                permField.appendChild(permRow);
+                card.appendChild(permField);
+
+                // --- Comment delete permission ---
+                const cpermLabelMap = { author: 'Yalnızca Yazar', owner: 'Sadece Sub Sahibi', anyone: 'Herkes' };
+                const cpermField = document.createElement('div'); cpermField.className = 'owned-sub-field';
+                cpermField.innerHTML = `<label>Yorum Silme İzni <span style="color:var(--text-muted); font-weight:400;">(şu an: ${cpermLabelMap[s.commentDeletePermission] || 'Yalnızca Yazar'})</span></label>`;
+                const cpermRow = document.createElement('div'); cpermRow.className = 'owned-sub-action-row';
                 const cpermSelect = document.createElement('select'); cpermSelect.className='select-field'; cpermSelect.innerHTML = `<option value="author" ${ (s.commentDeletePermission==='author') ? 'selected' : '' }>Yalnızca Yazar</option><option value="owner" ${(s.commentDeletePermission==='owner') ? 'selected' : ''}>Sadece Sub Sahibi</option><option value="anyone" ${(s.commentDeletePermission==='anyone') ? 'selected' : ''}>Herkes</option>`;
-                const cpermBtn = document.createElement('button'); cpermBtn.className='btn-secondary'; cpermBtn.textContent='Yorum İzni Kaydet'; cpermBtn.onclick = ()=>{ setSubCommentDeletePermission(s.name, cpermSelect.value); };
-                controls.appendChild(select); controls.appendChild(transferBtn); controls.appendChild(permSelect); controls.appendChild(permBtn); controls.appendChild(cpermSelect); controls.appendChild(cpermBtn);
-                row.appendChild(top); row.appendChild(controls); ownedDiv.appendChild(row);
+                const cpermBtn = document.createElement('button'); cpermBtn.className='btn-secondary'; cpermBtn.textContent='Kaydet'; cpermBtn.onclick = ()=>{ setSubCommentDeletePermission(s.name, cpermSelect.value); };
+                cpermRow.appendChild(cpermSelect); cpermRow.appendChild(cpermBtn);
+                cpermField.appendChild(cpermRow);
+                card.appendChild(cpermField);
+
+                ownedDiv.appendChild(card);
             });
         }
         // profile modal avatar preview
@@ -2181,7 +2207,7 @@
     }
 
     function setProfileTab(tab){
-        const selected = ['subs', 'saved', 'comments', 'settings'].includes(tab) ? tab : 'subs';
+        const selected = ['subs', 'owned', 'saved', 'comments', 'settings'].includes(tab) ? tab : 'subs';
         cleanupProfilePanelText();
         document.querySelectorAll('[data-profile-tab]').forEach(button => button.classList.toggle('active', button.dataset.profileTab === selected));
         document.querySelectorAll('[data-profile-panel]').forEach(panel => { panel.hidden = panel.dataset.profilePanel !== selected; });
@@ -2219,7 +2245,7 @@
                     <div class="nav-link" data-context-sub="${escapeHtml(s.name)}" onclick="filterFeed('${escapeHtml(s.name)}')">${avatar}<i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>
                     <div style="display:flex; gap:6px; align-items:center">
                         <button class="btn-secondary" onclick="toggleSubscribe('${escapeHtml(s.name)}')">${isSub ? t('leave') : t('join')}</button>
-                        ${canManage ? `<button class="btn-secondary" title="Sub özellikleri" onclick="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-gear"></i></button>` : ''}
+                        ${canManage ? `<button class="btn-secondary sub-gear-btn" title="Sub özellikleri" onclick="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-gear"></i></button>` : ''}
                     </div>
                 </div>
             `;
