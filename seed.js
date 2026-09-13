@@ -1,0 +1,148 @@
+const fs = require('fs');
+const path = require('path');
+
+const DB_PATH = path.join(__dirname, 'db.json');
+
+// db.json Okuma
+function readDB() {
+  try {
+    if (!fs.existsSync(DB_PATH)) return { state: {} };
+    const raw = fs.readFileSync(DB_PATH, 'utf8');
+    return JSON.parse(raw || '{"state":{}}');
+  } catch (e) {
+    console.error('readDB hatası:', e.message);
+    return { state: {} };
+  }
+}
+
+// db.json Yazma
+function writeDB(obj) {
+  try {
+    const tempPath = `${DB_PATH}.tmp`;
+    fs.writeFileSync(tempPath, JSON.stringify(obj, null, 2), 'utf8');
+    fs.renameSync(tempPath, DB_PATH);
+    console.log('✅ 50 adet post ve kullanıcılar başarıyla db.json dosyasına eklendi!');
+    return true;
+  } catch (e) {
+    console.error('writeDB hatası:', e.message);
+    return false;
+  }
+}
+
+// Eklenen bot/sanal kullanıcılar
+const mockUsers = [
+  { id: 1001, name: 'dev_deniz', bio: 'arch & backend', karma: 12, createdAt: Date.now() },
+  { id: 1002, name: 'code_crafter', bio: 'fullstack dev', karma: 25, createdAt: Date.now() },
+  { id: 1003, name: 'shadow_walker', bio: 'anime & gaming', karma: 8, createdAt: Date.now() },
+  { id: 1004, name: 'yolun_basindaki', bio: 'junior dev', karma: 3, createdAt: Date.now() },
+  { id: 1005, name: 'mırnav_sever', bio: 'kedi annesi/babası', karma: 15, createdAt: Date.now() },
+  { id: 1006, name: 'tech_lead_99', bio: 'system architect', karma: 42, createdAt: Date.now() },
+  { id: 1007, name: 'night_coder', bio: 'night owl', karma: 19, createdAt: Date.now() },
+  { id: 1008, name: 'pixel_artisan', bio: 'designer', karma: 7, createdAt: Date.now() },
+  { id: 1009, name: 'otaku_prime', bio: 'anime lover', karma: 30, createdAt: Date.now() },
+  { id: 1010, name: 'forum_veteran', bio: 'old school internet', karma: 50, createdAt: Date.now() }
+];
+
+// 50 Adet Doğal İçerikli Post
+const mockPostsData = [
+  { title: "arch linux audio sorunu yasayan var mi?", content: "dün güncelledikten sonra sol kanaldan ses gelmemeye basladi pipewire kullaniyorum benzer sorun yasayan oldu mu acaba?", sub: "genel", author: "dev_deniz", authorId: 1001 },
+  { title: "Render.com ücretsiz planda cold start süresi hakkında", content: "Projeyi Render üzerinde free tier'da host ediyorum ama ilk istekte 50 saniye bekletiyor. Bunu bypass etmek için pinger dışında önerisi olan var mı?", sub: "yazilim", author: "code_crafter", authorId: 1002 },
+  { title: "anime tavsiyesi lazim ama sürükleyici olsun", content: "son zamanlarda izleyecek bir şey bulamıyorum. isekai veya fantastik türde temposu düşmeyen sağlam bir şeyler önerir misiniz?", sub: "dizi-anime", author: "shadow_walker", authorId: 1003 },
+  { title: "Yazılıma sıfırdan başlayan biri için en mantıklı yol hangisi?", content: "Herkes farklı bir şey söylüyor. Kimi Python ile başla diyor kimi direkt JavaScript öğren diyor. Hedefim web geliştirme ama kafam çok karıştı.", sub: "yazilim", author: "yolun_basindaki", authorId: 1004 },
+  { title: "kedi mamasi onerisi olan var mi", content: "bizimki son zamanlarda tüy dökmeye başladı mama değiştirmeyi düşünüyorum. fiyat/performans ne önerirsiniz?", sub: "sohbet", author: "mırnav_sever", authorId: 1005 },
+  { title: "Node.js vs Go: Backend için hangisini tercih ediyorsunuz?", content: "Mikroservis mimarisine geçmeyi planlıyoruz. Performans açısından Go çok övülüyor ama ekibin Node.js tecrübesi var. Geçiş yapmaya değer mi?", sub: "yazilim", author: "tech_lead_99", authorId: 1006 },
+  { title: "gece geç saatlerde çalışırken dinlemelik playlist önerisi", content: "lo-fi veya synthwave tarzı odaklanmayı kolaylaştıran müzik listelerinizi paylaşır mısınız? sözsüz olması tercihimdir.", sub: "sohbet", author: "night_coder", authorId: 1007 },
+  { title: "Pencil2D ile vektörel çizim yapılır mı?", content: "Sadece kare kare animasyon için mi kullanılıyor yoksa basit logo tasarımı için de uygun mu? Kullanan var mı aranızda?", sub: "tasarim", author: "pixel_artisan", authorId: 1008 },
+  { title: "Mushoku Tensei son sezon hakkında ne düşünüyorsunuz?", content: "karakter gelişimi ve dünya tasarımı bence fantastik türün en iyilerinden ama tempo bazen çok düşüyor gibi hissettiriyor sizce nasıl?", sub: "dizi-anime", author: "otaku_prime", authorId: 1009 },
+  { title: "Sizce bir forumu canlı tutan şey nedir?", content: "Tasarım mı, içerik kalitesi mi yoksa topluluk kültürü mü? Yeni açılan platformların çoğu 2 ayda kapanıyor, sizce sebep ne?", sub: "genel", author: "forum_veteran", authorId: 1010 },
+  { title: "VS Code eklenti önerileri (2026)", content: "Verimliliğinizi 2 katına çıkaran vazgeçilmez dediğiniz VS Code eklentileri neler? Ben GitLens ve Prettier olmadan yaşayamıyorum.", sub: "yazilim", author: "code_crafter", authorId: 1002 },
+  { title: "gta 5 linux proton performansi nasil", content: "steam deck veya linux dağıtımlarında proton ile gta 5 oynayan var mı? fps drop veya ban riski durumu var mı online tarafta?", sub: "oyun", author: "dev_deniz", authorId: 1001 },
+  { title: "Finansal okuryazarlık için nereden başlamalı?", content: "Para yönetimi ve yatırım konularında kendimi geliştirmek istiyorum. Başlangıç seviyesi için önerebileceğiniz kitap veya kaynak var mı?", sub: "genel", author: "yolun_basindaki", authorId: 1004 },
+  { title: "XFCE masaüstü ortamını özelleştiren var mı?", content: "Hafif olduğu için kullanıyorum ama varsayılan teması biraz eski duruyor. Şık ve modern bir görünüm için tema/ikon önerisi olan?", sub: "teknoloji", author: "dev_deniz", authorId: 1001 },
+  { title: "laptop batarya ömrünü uzatmak için neler yapıyorsunuz", content: "sarjda sürekli kullanmak bataryayı öldürüyor diyorlar %80 sınırlandırması koymak gerçekten işe yarıyor mu?", sub: "teknoloji", author: "tech_lead_99", authorId: 1006 },
+  { title: "Ollama ile lokalde yapay zeka çalıştırmak", content: "8 GB RAM olan sistemde Llama 3 veya Mistral modelleri akıcı çalışır mı? Deneyen var mı aranızda, kota derdi olmadan kullanmak istiyorum.", sub: "teknoloji", author: "code_crafter", authorId: 1002 },
+  { title: "tek başınıza kaldığınızda yaptığınız en garip aktivite ne", content: "bazen evde kendi kendime podcast sunuyormuş gibi konuşuyorum aşırı eğlenceli sdfkjgh sizde var mı böyle saçma huylar?", sub: "sohbet", author: "shadow_walker", authorId: 1003 },
+  { title: "MongoDB vs PostgreSQL: Hangisi ne zaman tercih edilmeli?", content: "NoSQL esnekliği cazip geliyor ama ilişkisel veritabanlarının tutarlılığı da vazgeçilmez. Yeni bir projeye başlarken kararınızı ne belirliyor?", sub: "yazilim", author: "tech_lead_99", authorId: 1006 },
+  { title: "evden çalışanlar için bel ve boyun ağrısı çözümleri", content: "günde 8-10 saat masa başındayım sırtım mahvoldu. ergonomik koltuk mu yoksa standing desk mi daha mantıklı yatırımı nereye yapmalı?", sub: "sohbet", author: "night_coder", authorId: 1007 },
+  { title: "pnpm kullandıktan sonra npm'e dönememek", content: "disk alanından sağladığı tasarruf ve yükleme hızı gerçekten inanılmaz. halen npm kullanan var mı projelerinde?", sub: "yazilim", author: "code_crafter", authorId: 1002 },
+  { title: "Unreal Engine 5 için sistem gereksinimleri abartı mı?", content: "Indie bir oyun yapmayı planlıyorum fakat UE5'in sistem kaynaklarını sömürmesi gözümü korkutuyor. Unity ile devam etmek daha mı güvenli?", sub: "oyun", author: "pixel_artisan", authorId: 1008 },
+  { title: "en sevdiginiz kahve demleme yöntemi", content: "v60 mı french press mi chemex mi? ben v60 ile başladığımdan beri dışarıda kahve içemez oldum aroması bambaşka.", sub: "sohbet", author: "mırnav_sever", authorId: 1005 },
+  { title: "SEO uyumlu meta tag yapılandırması nasıl olmalı?", content: "Google Search Console'da sitemin indeks alma süresi çok uzun sürüyor. Open Graph ve canonical etiketleri dışında kritik olan ne var?", sub: "yazilim", author: "code_crafter", authorId: 1002 },
+  { title: "karanlık tema (dark mode) kullanmayan var mı gerçekten?", content: "gece gözü kör eden beyaz temaları kim kullanıyor merak ediyorum. göz sağlığı dışında şarj süresine de etkisi var sonuçta.", sub: "sohbet", author: "shadow_walker", authorId: 1003 },
+  { title: "Açık kaynak projelerine nasıl katkı sağlanır?", content: "GitHub üzerinde beğendiğim açık kaynak projelere PR göndermek istiyorum ama nereden başlayacağımı bilemiyorum. Good First Issue mantıklı mı?", sub: "yazilim", author: "yolun_basindaki", authorId: 1004 },
+  { title: "en son okudugunuz ve sizi etkileyen kitap", content: "ufuk açıcı, bakış açısı değiştiren tarzda kurgu veya kurgu dışı kitap tavsiyelerinizi bekliyorum.", sub: "genel", author: "forum_veteran", authorId: 1010 },
+  { title: "CSS Tailwind vs Vanilla CSS: Hangisini tercih ediyorsunuz?", content: "Tailwind HTML kodunu çok kirletiyor diyenler var ama hız kazandırdığı da bir gerçek. Büyük projelerde yönetilebilirlik nasıl?", sub: "yazilim", author: "pixel_artisan", authorId: 1008 },
+  { title: "İkinci el donanım alırken nelere dikkat etmeli?", content: "Ekran kartı ve işlemci almayı düşünüyorum ikinci elden. FurMark testi dışında satıcının dürüstlüğünü anlamanın bir yolu var mı?", sub: "teknoloji", author: "dev_deniz", authorId: 1001 },
+  { title: "spotify kütüphanesi silinen var mı hiç", content: "yanlışlıkla bir oynatma listesini sildim geri getirmenin bir yolu var mı web sitesi üzerinden desteğe mi yazmak lazım?", sub: "sohbet", author: "night_coder", authorId: 1007 },
+  { title: "Docker konteynırlarını optimize etme yolları", content: "Image boyutları 1 GB'ı geçmeye başladı. Multi-stage build dışında imaj boyutunu küçültmek için ne tür yöntemler kullanıyorsunuz?", sub: "yazilim", author: "tech_lead_99", authorId: 1006 },
+  { title: "günlük kaç saat uyuyorsunuz", content: "6 saat uyuyunca gün boyu zombi gibi geziyorum ama 8 saat uyuya da vakit yetmiyor. siz ideal dengeyi nasıl kurdunuz?", sub: "sohbet", author: "otaku_prime", authorId: 1009 },
+  { title: "Next.js App Router deneyimleriniz neler?", content: "Pages router'dan App router'a geçiş sürecinde baya zorlandım. Server Components mantığı harika ama caching tarafı bazen çıldırtıyor.", sub: "yazilim", author: "code_crafter", authorId: 1002 },
+  { title: "İnternetsiz ortamlarda zaman geçirme aktiviteleri", content: "Elektrik veya internet kesildiğinde telefonla oynamak dışında ne yapıyorsunuz? Kitap okumak dışında sürükleyici alternatif fikri olan?", sub: "sohbet", author: "mırnav_sever", authorId: 1005 },
+  { title: "Linux dual-boot yaparken Windows update'in GRUB'ı bozması", content: "Her güncellenmede EFI bölümünü bozmasından bıktım artık. İki ayrı SSD kullanmak kesin çözüm müdür bu duruma?", sub: "teknoloji", author: "dev_deniz", authorId: 1001 },
+  { title: "Yazılımcılar için İngilizce seviyesi ne kadar önemli?", content: "Dokümantasyon okuyacak kadar B1 seviyesi yeterli mi yoksa global işlerde çalışmak için konuşma odaklı C1 şart mı?", sub: "genel", author: "yolun_basindaki", authorId: 1004 },
+  { title: "indie oyun önerisi: az bilinen cevherler", content: "Hollow Knight, Hades gibi ana akım olanlar dışında gölgede kalmış ama mükemmel atmosfere sahip bağımsız oyun önerilerinizi bekliyorum.", sub: "oyun", author: "shadow_walker", authorId: 1003 },
+  { title: "Rest API vs GraphQL karşılaştırması", content: "Mobil uygulamamız için API yazıyoruz. Over-fetching sorununu çözmek için GraphQL düşünüyorduk ama karmaşıklığı artırır mı emin olamadık.", sub: "yazilim", author: "tech_lead_99", authorId: 1006 },
+  { title: "kulak içi kulaklikta kablolu mu kablosuz mu", content: "gecikme süresi ve ses kalitesi yüzünden kabloludan vazgeçemiyorum ama sporda da kablo çile oluyor. siz hangisini kullanıyorsunuz?", sub: "teknoloji", author: "night_coder", authorId: 1007 },
+  { title: "Yapay zeka araçları yazılımcıların işini elinden alacak mı?", content: "Kod yazan araçlar her geçen gün gelişiyor. Sizce 5 yıl sonra junior geliştirici pozisyonları tamamen ortadan kalkar mı?", sub: "genel", author: "forum_veteran", authorId: 1010 },
+  { title: "en iyi kod editörü fontu sizce hangisi?", content: "Fira Code, JetBrains Mono, Cascadia Code... Ligature (harf birleştirme) desteği olan fontlar gözü yormuyor bence.", sub: "yazilim", author: "pixel_artisan", authorId: 1008 },
+  { title: "git commit mesajlarını düzenli yazma alışkanlığı", content: "Projelerde 'fix', 'bug fix', 'asdasd' gibi commitler atmak yerine Conventional Commits standardını uygulamak ekibe inanılmaz düzen katıyor.", sub: "yazilim", author: "code_crafter", authorId: 1002 },
+  { title: "sabah erken kalkma alışkanlığı nasıl kazanılır", content: "alarmı ertelemekten kurtulamıyorum. gece erken yatsam bile sabah 07:00'de kalkmak imkansız geliyor önerisi olan var mı?", sub: "sohbet", author: "mırnav_sever", authorId: 1005 },
+  { title: "TypeScript kullanmalı mıyız yoksa Plain JS yeterli mi?", content: "Küçük projelerde build süresini ve tipi tanımlama yükünü artırıyor gibi ama büyük projelerde hayat kurtarıyor. Sizin sınırınız neresi?", sub: "yazilim", author: "tech_lead_99", authorId: 1006 },
+  { title: "retro oyun konsolu satan güvenilir yerler", content: "Game Boy Advance veya PSP almak istiyorum temiz durumda. İkinci el siteleri dışında koleksiyonculardan önerdiğiniz biri var mı?", sub: "oyun", author: "shadow_walker", authorId: 1003 },
+  { title: "Web uygulamasında güvenlik (Security) kontrolleri", content: "XSS ve CSRF korumalarını hallettik ama SQL Injection riski için ORM kullanmak tek başına yeterli midir? Başka nelere dikkat edilmeli?", sub: "yazilim", author: "code_crafter", authorId: 1002 },
+  { title: "masaüstü düzeninizi paylaşın", content: "kimin wallpaper'ı nasıl merak ediyorum. minimalist mi takılıyorsunuz yoksa simgelerle dolu bir kaos mu var?", sub: "sohbet", author: "pixel_artisan", authorId: 1008 },
+  { title: "Redis önbellekleme (caching) ne zaman şart olur?", content: "Veritabanı yükünü hafifletmek için Redis eklemek istiyoruz. Oturum yönetimi ve sık sorulan sorgular dışında nerelerde kullanıyorsunuz?", sub: "yazilim", author: "tech_lead_99", authorId: 1006 },
+  { title: "kendi sunucusunda (self-hosted) servis barındıranlar", content: "Evde eski bir bilgisayara Proxmox/Linux kurup kendi cloud sunucusunu oluşturan var mı? Hangi servisleri çalıştırıyorsunuz?", sub: "teknoloji", author: "dev_deniz", authorId: 1001 },
+  { title: "dizi önerisi: ilk bölümden içine çeken cinsten", content: "ağır ilerleyen yapımlardan sıkıldım. ilk 15 dakikada gizemi kurup merak ettiren sürükleyici bir şeyler lazım.", sub: "dizi-anime", author: "otaku_prime", authorId: 1009 },
+  { title: "İzanai forum topluluğuna merhaba!", content: "Platform yeni ama arayüzü ve yapısı oldukça hoş duruyor. Umarım güzel ve kaliteli bir teknoloji/yazılım ortamı oluşur, hoş bulduk!", sub: "genel", author: "forum_veteran", authorId: 1010 }
+];
+
+function seed() {
+  const dbData = readDB();
+  const currentState = dbData.state || {};
+
+  // Mevcut postlar ve kullanıcılar
+  const existingPosts = currentState.posts || [];
+  const existingUsers = currentState.users || [];
+
+  const now = Date.now();
+
+  // Postları uygun formata çevirme (Zamanda geriye doğru dağıtarak daha doğal gösterme)
+  const formattedPosts = mockPostsData.map((post, index) => {
+    return {
+      id: now - (index * 3600000), // Her postu 1 saat arayla atılmış gibi simüle eder
+      title: post.title,
+      content: post.content,
+      sub: post.sub || "genel",
+      author: post.author,
+      authorId: post.authorId,
+      createdAt: now - (index * 3600000),
+      votes: {},
+      score: Math.floor(Math.random() * 15) + 1,
+      comments: []
+    };
+  });
+
+  // Çakışma olmaması için kullanıcı ve post birleştirme
+  const updatedUsers = [...existingUsers];
+  mockUsers.forEach(u => {
+    if (!updatedUsers.some(ex => ex.id === u.id || ex.name === u.name)) {
+      updatedUsers.push(u);
+    }
+  });
+
+  const updatedPosts = [...formattedPosts, ...existingPosts];
+
+  const newState = {
+    ...currentState,
+    users: updatedUsers,
+    posts: updatedPosts
+  };
+
+  writeDB({
+    state: newState,
+    updatedAt: now
+  });
+}
+
+seed();
