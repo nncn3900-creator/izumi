@@ -1867,9 +1867,22 @@
 
     window.addEventListener('storage', event => {
         if(!event.key || !event.key.startsWith('iz_')) return;
-        if(event.key === 'iz_posts') state.posts = JSON.parse(event.newValue || '[]');
-        if(event.key === 'iz_subs') state.subs = JSON.parse(event.newValue || '[]');
-        if(event.key === 'iz_saved') state.saved = JSON.parse(event.newValue || '[]');
+        // Merge instead of overwrite: another tab's snapshot can be stale (e.g. taken
+        // just before this tab created a new sub/post), so a blind replace here would
+        // silently erase things this tab already knows about. Union-merge keeps both.
+        if(event.key === 'iz_posts'){
+            const incomingPosts = JSON.parse(event.newValue || '[]');
+            state.posts = mergePostRecords(state.posts, incomingPosts).filter(post => !(state.deletedPostIds || []).includes(Number(post.id)));
+        }
+        if(event.key === 'iz_subs'){
+            const incomingSubs = JSON.parse(event.newValue || '[]');
+            const deletedSubNames = new Set((state.deletedSubNames || []).map(normalizeSubName));
+            state.subs = normalizeSubs(mergeRecords(state.subs, incomingSubs, 'name')).filter(sub => !deletedSubNames.has(normalizeSubName(sub.name)));
+        }
+        if(event.key === 'iz_saved'){
+            const incomingSaved = JSON.parse(event.newValue || '[]');
+            state.saved = Array.from(new Set([...(state.saved || []), ...incomingSaved]));
+        }
         renderSubs();
         renderPosts();
         renderProfile();
