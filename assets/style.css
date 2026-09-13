@@ -32,9 +32,10 @@ body{background:var(--theme-page); color:var(--theme-text);}
 @keyframes toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .sub-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px;border:1px solid transparent;border-radius:var(--radius)}
 .sub-row:hover{border-color:var(--border-color);background:var(--bg-tertiary)}
-.sub-gear-btn{opacity:0;transform:scale(.8) rotate(-45deg);pointer-events:none;transition:opacity .18s ease, transform .28s cubic-bezier(.34,1.56,.64,1)}
+.sub-gear-btn{width:0;min-width:0;padding:0;margin-left:0;border-width:0;opacity:0;overflow:hidden;white-space:nowrap;transition:width .3s cubic-bezier(.4,0,.2,1), padding .3s cubic-bezier(.4,0,.2,1), margin-left .3s cubic-bezier(.4,0,.2,1), border-width .3s ease, opacity .2s ease}
 .sub-row:hover .sub-gear-btn,
-.sub-gear-btn:focus-visible{opacity:1;transform:scale(1) rotate(0deg);pointer-events:auto}
+.sub-gear-btn:focus-visible{width:34px;padding:8px 10px;margin-left:6px;border-width:1px;opacity:1}
+.sub-row-actions{display:flex; align-items:center}
 
 /* Owned-sub management cards (profile modal) */
 .owned-sub-card{border:1px solid var(--border-color); border-radius:var(--radius); background:var(--bg-tertiary); padding:12px; display:flex; flex-direction:column; gap:12px}

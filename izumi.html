@@ -396,6 +396,8 @@
             border-radius: 12px;
             width: 100%;
             max-width: 460px;
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
             padding: 22px;
             display: flex;
             flex-direction: column;
@@ -438,6 +440,12 @@
             justify-content: space-between;
             align-items: center;
             font-weight: 600;
+            position: sticky;
+            top: -22px;
+            margin: -22px -22px 0;
+            padding: 22px 22px 0;
+            background-color: #16161a;
+            z-index: 2;
         }
 
         .input-field, .textarea-field, .select-field {
@@ -810,7 +818,7 @@
             .modal form, .modal > div { min-width: 0; max-width: 100%; }
             .modal-overlay { align-items: flex-start; padding: 12px; overflow-y: auto; }
             .modal { width: 100%; max-height: calc(100vh - 24px); overflow-y: auto; padding: 16px; }
-            .modal-header { gap: 12px; }
+            .modal-header { gap: 12px; top: -16px; margin: -16px -16px 0; padding: 16px 16px 0; }
             .modal-header > span { min-width: 0; overflow-wrap: anywhere; }
         }
 
@@ -1219,15 +1227,15 @@
         </div>
         <div style="margin-top:12px;" data-profile-panel="saved">
             <h4 style="margin:0 0 8px 0" data-i18n="savedPosts">Kaydedilen Gönderiler</h4>
-            <div id="user-saved-list" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow:auto; padding-right:6px"></div>
+            <div id="user-saved-list" style="display:flex; flex-direction:column; gap:8px"></div>
         </div>
         <div style="margin-top:12px;" data-profile-panel="owned">
             <h4 style="margin:0 0 8px 0" data-i18n="ownedSubs">Sahip Olduğum Sub'lar</h4>
-            <div id="owned-subs-list" style="display:flex; flex-direction:column; gap:12px; max-height:360px; overflow:auto; padding-right:6px"></div>
+            <div id="owned-subs-list" style="display:flex; flex-direction:column; gap:12px"></div>
         </div>
         <div style="margin-top:12px;" data-profile-panel="comments">
             <h4 style="margin:0 0 8px 0" data-i18n="myComments">Yorumlarım</h4>
-            <div id="user-comments-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px"></div>
+            <div id="user-comments-list" style="display:flex; flex-direction:column; gap:8px"></div>
         </div>
         <div style="margin-top:12px;" data-profile-panel="settings">
             <h4 style="margin:0 0 8px 0" data-i18n="settings">Ayarlar</h4>
@@ -2243,7 +2251,7 @@
             subList.innerHTML += `
                 <div class="sub-row">
                     <div class="nav-link" data-context-sub="${escapeHtml(s.name)}" onclick="filterFeed('${escapeHtml(s.name)}')">${avatar}<i class="fa-solid fa-hashtag"></i> i/${escapeHtml(s.name)}</div>
-                    <div style="display:flex; gap:6px; align-items:center">
+                    <div class="sub-row-actions">
                         <button class="btn-secondary" onclick="toggleSubscribe('${escapeHtml(s.name)}')">${isSub ? t('leave') : t('join')}</button>
                         ${canManage ? `<button class="btn-secondary sub-gear-btn" title="Sub özellikleri" onclick="openSubProperties(event, '${s.name}')"><i class="fa-solid fa-gear"></i></button>` : ''}
                     </div>
