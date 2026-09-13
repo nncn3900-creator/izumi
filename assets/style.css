@@ -47,7 +47,7 @@ body{background:var(--theme-page); color:var(--theme-text);}
 
 /* Make post cards slightly elevated */
 .post-card{box-shadow: 0 6px 18px rgba(0,0,0,0.5); transition: transform .14s ease, box-shadow .14s ease; overflow:hidden; border-radius:10px}
-.post-card:hover{transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.6);}
+.post-card:hover{transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.45);}
 
 .post-title{color:var(--text-main);}
 .post-meta a.sub-tag{color:var(--accent);}
@@ -69,11 +69,8 @@ body{background:var(--theme-page); color:var(--theme-text);}
 }
 
 /* Vote box highlight */
-.vote-box span{font-weight:700; color: #ffdcdc;}
-.vote-btn .fa-chevron-up{color: #cfcfcf}
-
-/* Buttons */
-.btn-primary{background:var(--accent); color:#fff}
+.vote-box span{font-weight:700; color: var(--text-main);}
+.vote-btn .fa-chevron-up{color: var(--text-muted)}
 
 /* Compact post body */
 .post-body{max-height:none; overflow:visible; overflow-wrap:anywhere; word-break:break-word}
@@ -83,7 +80,7 @@ body{background:var(--theme-page); color:var(--theme-text);}
 .user-badge{display:inline-block; margin-left:5px; padding:2px 5px; border:1px solid var(--border-color); border-radius:4px; color:var(--text-muted); font-size:.68rem; font-weight:600}
 
 /* Modal tweaks */
-.modal{backdrop-filter: blur(4px)}
+.modal{background:#16161a}
 
 /* Minor utilities */
 .hidden{display:none}

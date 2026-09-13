@@ -211,7 +211,15 @@ app.post('/api/state', (req, res)=>{
     const body = req.body || {};
     if(!body.state) return res.status(400).json({ error: 'missing state' });
     const current = readDB();
-    const mergedState = mergeState(current.state, body.state);
+    const incoming = { ...body.state };
+    delete incoming.user;
+    delete incoming.language;
+    delete incoming.theme;
+    delete incoming.feedLimit;
+    delete incoming.sortMode;
+    delete incoming.feedMode;
+    delete incoming.saved;
+    const mergedState = mergeState(current.state, incoming);
     const ok = writeDB({ state: mergedState, updatedAt: Date.now() });
     if(!ok) return res.status(500).json({ error: 'write_failed' });
     io.to('feed').emit('state-updated', { updatedAt: Date.now() });

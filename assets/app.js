@@ -1,28 +1,17 @@
 // Enhancements and small behaviors for modern Reddit-like UI
 console.log('assets/app.js loaded — UI enhancements active');
 
-// Smooth scroll to comments when opening
-const originalOpenComments = window.openComments || function(id){};
-window.openComments = function(id){
-    originalOpenComments(id);
-    setTimeout(()=>{
-        const modal = document.getElementById('modal-comments');
-        if(modal) modal.querySelector('.modal').scrollIntoView({behavior:'smooth'});
-    }, 120);
-}
-
 // Keyboard shortcut: 'n' to open new post modal
 window.addEventListener('keydown', (e)=>{
-    if(e.key === 'n' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA'){
-        const modal = document.getElementById('modal-post');
-        if(modal) modal.style.display = 'flex';
+    if(e.key === 'n' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'SELECT'){
+        if(typeof openPostComposer === 'function') openPostComposer();
     }
 });
 
 // Tiny UX: close modal on overlay click
 document.querySelectorAll('.modal-overlay').forEach(o=>{
     o.addEventListener('click', (ev)=>{
-        if(ev.target === o) o.style.display='none';
+        if(ev.target === o && typeof closeModal === 'function') closeModal(o.id);
     });
 });
 

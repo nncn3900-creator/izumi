@@ -377,24 +377,63 @@
         /* Modals */
         .modal-overlay {
             position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(0, 0, 0, 0.8);
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 4000;
+            padding: 20px;
         }
 
         .modal {
-            background-color: var(--bg-secondary);
+            background-color: #16161a;
             border: 1px solid var(--border-color);
-            border-radius: var(--radius);
+            border-radius: 12px;
             width: 100%;
-            max-width: 500px;
-            padding: 20px;
+            max-width: 460px;
+            padding: 22px;
             display: flex;
             flex-direction: column;
             gap: 14px;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+            animation: modal-enter .22s cubic-bezier(.2,.75,.25,1) both;
+        }
+
+        .auth-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding: 4px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .auth-tab {
+            border: 0;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 9px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .auth-tab.active {
+            background: var(--bg-hover);
+            color: var(--text-main);
+        }
+
+        .auth-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .modal-header {
@@ -954,8 +993,8 @@
                     <path d="M50 15v70M29 25v23l21 13 21-13V25M29 48l-11-8M71 48l11-8M34 72h32"></path>
                 </svg>
                 <div>
-                    <div class="hero-title" data-i18n="welcome">Hoş geldin — İzumi'ye giriş yaptın</div>
-                    <div style="font-size:0.9rem; color:var(--text-muted)" data-i18n="welcomeText">Yeni fikirler keşfet, kendi topluluğunu oluştur ve paylaş.</div>
+                    <div class="hero-title" id="hero-title" data-i18n="welcome">izanai'ye hoş geldin</div>
+                    <div style="font-size:0.9rem; color:var(--text-muted)" id="hero-text" data-i18n="welcomeText">Anonim bakabilirsin. Paylaşmak için hesap açman yeterli.</div>
                 </div>
             </div>
             <div class="hero-cta">
@@ -1175,7 +1214,6 @@
         </div>
         <div style="margin-top:12px;" data-profile-panel="subs">
             <h4 style="margin:0 0 8px 0" data-i18n="subscriptions">Katıldığım Sub'lar</h4>
-                        home: 'Ana Akış', notifications: 'Bildirimler', loginAccounts: 'Oturum Aç / Hesaplar', createSub: 'Sub Oluştur', profileSettings: 'Profil Ayarları', settings: 'Ayarlar', sharePost: 'Post Paylaş', activeSubs: "Aktif Sub'lar", session: 'Oturum', all: 'Tümü', following: 'Takip Ettiklerim', discover: 'Keşfet', saved: 'Kaydedilenler', allFeed: 'Tüm Akış', sort: 'Sırala:', new: 'Yeni', top: 'En Çok Oy', hot: 'Gündem', welcome: "Hoş geldin — İzumi'ye giriş yaptın", welcomeText: 'Yeni fikirler keşfet, kendi topluluğunu oluştur ve paylaş.', shareNow: 'Hemen Post Paylaş', language: 'Dil', languageHint: 'Türkçe ana dildir. Seçiminiz bu cihazda saklanır.', anonymousProfile: 'Anonim Profilin', noBio: 'Henüz biyografi eklenmedi.', posts: 'Postlar', karma: 'Karma', popularSubs: "Popüler Sub'lar", izumiStats: 'izanai İstatistikleri', active24h: 'Son 24s aktif', post: 'Post', comment: 'Yorum', sub: 'Sub', newPost: 'Yeni Post Gönder', share: 'Paylaş', newSub: 'Yeni Sub Oluştur', create: 'Oluştur', subProperties: 'Sub Özellikleri', deletePermission: 'Silme İzni', commentDeletePermission: 'Yorum Silme İzni', transferOwnership: 'Sahipliği Devret', subscriptions: "Katıldığım Sub'lar", savedPosts: 'Kaydedilen Gönderiler', ownedSubs: "Sahip Olduğum Sub'lar", myComments: 'Yorumlarım', portableBackup: 'Taşınabilir Tam Kayıt', subscribe: 'Katıl', leave: 'Çık', views: 'Görüntülenme', comments: 'Yorumlar', savedLabel: 'Kaydedildi', save: 'Kaydet', report: 'Rapor Et', delete: 'Sil', edit: 'Düzenle', createAccountHint: 'Yeni Hesap Oluştur (parola 8+ karakter, büyük/küçük harf, rakam ve özel karakter içermeli)', loginTitle: 'Hesaplar / Oturum Aç', login: 'Oturum Aç', postDetails: 'Gönderi Detayı & Yorumlar', addComment: 'Yorum Yap', reportPost: 'Post Rapor Et', userProfile: 'Kullanıcı Profili', followers: 'Takipçi', followingCount: 'Takip', nsfwContent: 'NSFW içerik', clickToReveal: 'Görüntülemek için tıklayın', accountAge: 'Hesap yaşı', accountAgeUnknown: 'Hesap yaşı bilinmiyor', da [truncated]
             <div id="user-subs-list" style="display:flex; flex-direction:column; gap:6px"></div>
         </div>
         <div style="margin-top:12px;" data-profile-panel="saved">
@@ -1229,25 +1267,27 @@
 </div>
 
 <!-- LOGIN / ACCOUNTS MODAL -->
-<div class="modal-overlay" id="modal-login">
-    <div class="modal">
+<div class="modal-overlay" id="modal-login" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="login-title" aria-modal="true">
         <div class="modal-header">
-            <span data-i18n="loginTitle">Hesaplar / Oturum Aç</span>
+            <span id="login-title" data-i18n="loginTitle">Oturum</span>
             <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('modal-login')"></i>
         </div>
-        <div style="display:flex; gap:8px;">
-            <input class="input-field" id="login-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
-            <input class="input-field" id="login-password" type="password" placeholder="Parola" data-placeholder-tr="Parola" data-placeholder-en="Password" style="max-width:180px;" />
-            <button class="btn-secondary" onclick="loginSelected()" data-i18n="login">Oturum Aç</button>
+        <div class="auth-tabs" role="tablist">
+            <button type="button" class="auth-tab active" data-auth-tab="login" onclick="setAuthTab('login')" data-i18n="login">Oturum Aç</button>
+            <button type="button" class="auth-tab" data-auth-tab="register" onclick="setAuthTab('register')">Hesap Oluştur</button>
         </div>
-        <hr style="border-color:var(--border-color)">
-        <div style="font-size:0.9rem; color:var(--text-muted);" data-i18n="createAccountHint">Yeni Hesap Oluştur (Parola zorunludur, en az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermeli)</div>
-        <input class="input-field" id="new-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
-        <input class="input-field" id="new-password" type="password" placeholder="Parola (güçlü olmalı)" data-placeholder-tr="Parola (güçlü olmalı)" data-placeholder-en="Password (must be strong)">
-        <div id="password-strength" style="font-size:0.85rem; color:var(--text-muted); margin-top:6px; display:flex; align-items:center; gap:8px;"></div>
-        <button class="btn-primary" onclick="createAndLogin()">Hesap Oluştur ve Oturum Aç</button>
-        <div style="margin-top:8px;">
-            <button class="btn-secondary" onclick="logout()">Çıkış Yap</button>
+        <div class="auth-stack" data-auth-panel="login">
+            <input class="input-field" id="login-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
+            <input class="input-field" id="login-password" type="password" placeholder="Parola" data-placeholder-tr="Parola" data-placeholder-en="Password">
+            <button class="btn-primary" onclick="loginSelected()" data-i18n="login">Oturum Aç</button>
+        </div>
+        <div class="auth-stack" data-auth-panel="register" hidden>
+            <div style="font-size:0.85rem; color:var(--text-muted);" data-i18n="createAccountHint">Parola en az 8 karakter olmalı; büyük/küçük harf, rakam ve özel karakter içermeli.</div>
+            <input class="input-field" id="new-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
+            <input class="input-field" id="new-password" type="password" placeholder="Parola (güçlü olmalı)" data-placeholder-tr="Parola (güçlü olmalı)" data-placeholder-en="Password (must be strong)">
+            <div id="password-strength" style="font-size:0.85rem; color:var(--text-muted); display:flex; align-items:center; gap:8px;"></div>
+            <button class="btn-primary" onclick="createAndLogin()">Hesap Oluştur</button>
         </div>
     </div>
 </div>
@@ -1398,7 +1438,10 @@
     }
 
     document.addEventListener('keydown', event => {
-        if(event.key === 'Escape') closeMobileMenu();
+        if(event.key !== 'Escape') return;
+        closeMobileMenu();
+        const openOverlay = [...document.querySelectorAll('.modal-overlay')].reverse().find(el => el.classList.contains('is-visible') || el.style.display === 'flex');
+        if(openOverlay) closeModal(openOverlay.id);
     });
 
     function persistLocalState() {
@@ -1438,13 +1481,15 @@
 
     const translations = {
         tr: {
-            home: 'Ana Akış', notifications: 'Bildirimler', loginAccounts: 'Oturum Aç / Hesaplar', createSub: 'Sub Oluştur', profileSettings: 'Profil Ayarları', settings: 'Ayarlar', sharePost: 'Post Paylaş', activeSubs: "Aktif Sub'lar", session: 'Oturum', all: 'Tümü', following: 'Takip Ettiklerim', discover: 'Keşfet', saved: 'Kaydedilenler', allFeed: 'Tüm Akış', sort: 'Sırala:', new: 'Yeni', top: 'En Çok Oy', hot: 'Gündem', welcome: "Hoş geldin — İzumi'ye giriş yaptın", welcomeText: 'Yeni fikirler keşfet, kendi topluluğunu oluştur ve paylaş.', shareNow: 'Hemen Post Paylaş', language: 'Dil', languageHint: 'Türkçe ana dildir. Seçiminiz bu cihazda saklanır.', anonymousProfile: 'Anonim Profilin', noBio: 'Henüz biyografi eklenmedi.', posts: 'Postlar', karma: 'Karma', popularSubs: "Popüler Sub'lar", izumiStats: 'izanai İstatistikleri', active24h: 'Son 24s aktif', post: 'Post', comment: 'Yorum', sub: 'Sub', newPost: 'Yeni Post Gönder', share: 'Paylaş', newSub: 'Yeni Sub Oluştur', create: 'Oluştur', subProperties: 'Sub Özellikleri', deletePermission: 'Silme İzni', commentDeletePermission: 'Yorum Silme İzni', transferOwnership: 'Sahipliği Devret', subscriptions: 'Aktif Abonelikler', savedPosts: 'Kaydedilen Gönderiler', ownedSubs: "Sahip Olduğum Sub'lar", myComments: 'Yorumlarım', portableBackup: 'Taşınabilir Tam Kayıt', subscribe: 'Abone Ol', leave: 'Çık', views: 'Görüntülenme', comments: 'Yorumlar', savedLabel: 'Kaydedildi', save: 'Kaydet', report: 'Rapor Et', delete: 'Sil', edit: 'Düzenle', createAccountHint: 'Yeni Hesap Oluştur (parola 8+ karakter, büyük/küçük harf, rakam ve özel karakter içermeli)', loginTitle: 'Hesaplar / Oturum Aç', login: 'Oturum Aç', postDetails: 'Gönderi Detayı & Yorumlar', addComment: 'Yorum Yap', reportPost: 'Post Rapor Et', userProfile: 'Kullanıcı Profili', followers: 'Takipçi', followingCount: 'Takip', nsfwContent: 'NSFW içerik', clickToReveal: 'Görüntülemek için tıklayın', accountAge: 'Hesap yaşı', accountAgeUnknown: 'Hesap yaşı bilinmiyor', days: 'gün', weeks: 'hafta', months: 'ay', years: 'yıl'
+            home: 'Ana Akış', notifications: 'Bildirimler', loginAccounts: 'Oturum Aç / Hesaplar', createSub: 'Sub Oluştur', profileSettings: 'Profil Ayarları', settings: 'Ayarlar', sharePost: 'Post Paylaş', activeSubs: "Aktif Sub'lar", session: 'Oturum', all: 'Tümü', following: 'Takip Ettiklerim', discover: 'Keşfet', saved: 'Kaydedilenler', allFeed: 'Tüm Akış', sort: 'Sırala:', new: 'Yeni', top: 'En Çok Oy', hot: 'Gündem', welcome: "izanai'ye hoş geldin", welcomeText: 'Anonim bakabilirsin. Paylaşmak için hesap açman yeterli.', shareNow: 'Hemen Post Paylaş', language: 'Dil', languageHint: 'Türkçe ana dildir. Seçiminiz bu cihazda saklanır.', anonymousProfile: 'Anonim Profilin', noBio: 'Henüz biyografi eklenmedi.', posts: 'Postlar', karma: 'Karma', popularSubs: "Popüler Sub'lar", izumiStats: 'izanai İstatistikleri', active24h: 'Son 24s aktif', post: 'Post', comment: 'Yorum', sub: 'Sub', newPost: 'Yeni Post Gönder', share: 'Paylaş', newSub: 'Yeni Sub Oluştur', create: 'Oluştur', subProperties: 'Sub Özellikleri', deletePermission: 'Silme İzni', commentDeletePermission: 'Yorum Silme İzni', transferOwnership: 'Sahipliği Devret', subscriptions: 'Aktif Abonelikler', savedPosts: 'Kaydedilen Gönderiler', ownedSubs: "Sahip Olduğum Sub'lar", myComments: 'Yorumlarım', portableBackup: 'Taşınabilir Tam Kayıt', subscribe: 'Abone Ol', leave: 'Çık', views: 'Görüntülenme', comments: 'Yorumlar', savedLabel: 'Kaydedildi', save: 'Kaydet', report: 'Rapor Et', delete: 'Sil', edit: 'Düzenle', createAccountHint: 'Yeni Hesap Oluştur (parola 8+ karakter, büyük/küçük harf, rakam ve özel karakter içermeli)', loginTitle: 'Hesaplar / Oturum Aç', login: 'Oturum Aç', postDetails: 'Gönderi Detayı & Yorumlar', addComment: 'Yorum Yap', reportPost: 'Post Rapor Et', userProfile: 'Kullanıcı Profili', followers: 'Takipçi', followingCount: 'Takip', nsfwContent: 'NSFW içerik', clickToReveal: 'Görüntülemek için tıklayın', accountAge: 'Hesap yaşı', accountAgeUnknown: 'Hesap yaşı bilinmiyor', days: 'gün', weeks: 'hafta', months: 'ay', years: 'yıl'
         },
         en: {
-            home: 'Home Feed', notifications: 'Notifications', loginAccounts: 'Log In / Accounts', createSub: 'Create Sub', profileSettings: 'Profile Settings', settings: 'Settings', sharePost: 'Share Post', activeSubs: 'Active Subs', session: 'Session', all: 'All', following: 'Following', discover: 'Discover', saved: 'Saved', allFeed: 'All Feed', sort: 'Sort:', new: 'New', top: 'Top Voted', hot: 'Trending', welcome: 'Welcome — you entered Izumi', welcomeText: 'Discover ideas, create your community and share.', shareNow: 'Share a Post', language: 'Language', languageHint: 'Turkish is the default language. Your choice is saved on this device.', anonymousProfile: 'Anonymous Profile', noBio: 'No bio added yet.', posts: 'Posts', karma: 'Karma', popularSubs: 'Popular Subs', izumiStats: 'izanai Statistics', active24h: 'Active in 24h', post: 'Post', comment: 'Comment', sub: 'Sub', newPost: 'New Post', share: 'Share', newSub: 'Create New Sub', create: 'Create', subProperties: 'Sub Properties', deletePermission: 'Delete Permission', commentDeletePermission: 'Comment Delete Permission', transferOwnership: 'Transfer Ownership', subscriptions: 'Active Subscriptions', savedPosts: 'Saved Posts', ownedSubs: 'My Subs', myComments: 'My Comments', portableBackup: 'Portable Full Backup', subscribe: 'Subscribe', leave: 'Leave', views: 'Views', comments: 'Comments', savedLabel: 'Saved', save: 'Save', report: 'Report', delete: 'Delete', edit: 'Edit', createAccountHint: 'Create New Account (password must be 8+ characters with upper/lowercase, a number and a special character)', loginTitle: 'Accounts / Log In', login: 'Log In', postDetails: 'Post Details & Comments', addComment: 'Add a Comment', reportPost: 'Report Post', userProfile: 'User Profile', followers: 'Followers', followingCount: 'Following', nsfwContent: 'NSFW content', clickToReveal: 'Click to reveal', accountAge: 'Account age', accountAgeUnknown: 'Account age unknown', days: 'days', weeks: 'weeks', months: 'months', years: 'years'
+            home: 'Home Feed', notifications: 'Notifications', loginAccounts: 'Log In / Accounts', createSub: 'Create Sub', profileSettings: 'Profile Settings', settings: 'Settings', sharePost: 'Share Post', activeSubs: 'Active Subs', session: 'Session', all: 'All', following: 'Following', discover: 'Discover', saved: 'Saved', allFeed: 'All Feed', sort: 'Sort:', new: 'New', top: 'Top Voted', hot: 'Trending', welcome: 'Welcome to izanai', welcomeText: 'Browse anonymously. Create an account to post.', shareNow: 'Share a Post', language: 'Language', languageHint: 'Turkish is the default language. Your choice is saved on this device.', anonymousProfile: 'Anonymous Profile', noBio: 'No bio added yet.', posts: 'Posts', karma: 'Karma', popularSubs: 'Popular Subs', izumiStats: 'izanai Statistics', active24h: 'Active in 24h', post: 'Post', comment: 'Comment', sub: 'Sub', newPost: 'New Post', share: 'Share', newSub: 'Create New Sub', create: 'Create', subProperties: 'Sub Properties', deletePermission: 'Delete Permission', commentDeletePermission: 'Comment Delete Permission', transferOwnership: 'Transfer Ownership', subscriptions: 'Active Subscriptions', savedPosts: 'Saved Posts', ownedSubs: 'My Subs', myComments: 'My Comments', portableBackup: 'Portable Full Backup', subscribe: 'Subscribe', leave: 'Leave', views: 'Views', comments: 'Comments', savedLabel: 'Saved', save: 'Save', report: 'Report', delete: 'Delete', edit: 'Edit', createAccountHint: 'Create New Account (password must be 8+ characters with upper/lowercase, a number and a special character)', loginTitle: 'Accounts / Log In', login: 'Log In', postDetails: 'Post Details & Comments', addComment: 'Add a Comment', reportPost: 'Report Post', userProfile: 'User Profile', followers: 'Followers', followingCount: 'Following', nsfwContent: 'NSFW content', clickToReveal: 'Click to reveal', accountAge: 'Account age', accountAgeUnknown: 'Account age unknown', days: 'days', weeks: 'weeks', months: 'months', years: 'years'
         },
         staticTr: {
+            'Oturum': 'Sign in',
             'Hesaplar / Oturum Aç': 'Accounts / Log In',
+            'Hesap Oluştur': 'Create Account',
             'Oturum Aç': 'Log In',
             'Yeni Hesap Oluştur': 'Create New Account',
             'Parola zorunludur, en az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermeli': 'Password required: 8+ characters with upper/lowercase, a number and a special character',
@@ -1538,7 +1583,9 @@
         new: 'Yeni'
         , inappropriate: 'Uygunsuz İçerik'
         , harassment: 'Taciz/Zorbalık'
-        , other: 'Diğer'
+        , other: 'Diğer',
+        loginTitle: 'Oturum Aç',
+        createAccountHint: 'Parola en az 8 karakter olmalı; büyük/küçük harf, rakam ve özel karakter içermeli.'
     });
     Object.assign(translations.en, {
         joinedSubs: 'Joined Subs',
@@ -1552,7 +1599,9 @@
         new: 'New'
         , inappropriate: 'Inappropriate content'
         , harassment: 'Harassment/Bullying'
-        , other: 'Other'
+        , other: 'Other',
+        loginTitle: 'Sign in',
+        createAccountHint: 'Password must be 8+ characters with upper/lowercase, a number and a special character.'
     });
 
     let translatingStaticText = false;
@@ -1573,11 +1622,6 @@
         });
         translatingStaticText = false;
     }
-
-    const languageObserver = new MutationObserver(() => {
-        if(state.language === 'en' || state.language === 'tr') translateStaticText();
-    });
-    languageObserver.observe(document.body, { childList: true, subtree: true });
 
     function setLanguage(language){
         state.language = language === 'en' ? 'en' : 'tr';
@@ -1665,12 +1709,25 @@
         openNotifications();
     }
 
+    function getSharedState(){
+        return {
+            posts: state.posts,
+            subs: state.subs,
+            users: state.users,
+            activeSubs: state.activeSubs,
+            reports: state.reports,
+            notifications: state.notifications,
+            deletedPostIds: state.deletedPostIds,
+            deletedSubNames: state.deletedSubNames
+        };
+    }
+
     async function syncStateToServer(){
         try{
             const res = await fetch('/api/state', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ state })
+                body: JSON.stringify({ state: getSharedState() })
             });
             if(!res.ok) {
                 console.warn(`Server sync failed: ${res.status} ${res.statusText}`);
@@ -1947,12 +2004,22 @@
 
     let activeSubContext = null; // when a sub is active (user clicked into a sub), use it for post creation
 
+    function setAuthTab(tab){
+        const selected = tab === 'register' ? 'register' : 'login';
+        document.querySelectorAll('[data-auth-tab]').forEach(button => button.classList.toggle('active', button.dataset.authTab === selected));
+        document.querySelectorAll('[data-auth-panel]').forEach(panel => { panel.hidden = panel.dataset.authPanel !== selected; });
+        const title = document.getElementById('login-title');
+        if(title) title.textContent = selected === 'register' ? 'Hesap Oluştur' : t('loginTitle');
+    }
+
     function openModal(id) { 
         if(id === 'modal-post') preparePostModal();
+        if(id === 'modal-login') setAuthTab('login');
         const modal = document.getElementById(id);
         if(!modal) return;
         if(id === 'modal-profile') cleanupProfilePanelText();
         modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
         requestAnimationFrame(() => modal.classList.add('is-visible'));
     }
 
@@ -1960,9 +2027,22 @@
         return !!(state.user && state.user.id && (state.users || []).some(user => user.id === state.user.id));
     }
 
+    function renderWelcome(){
+        const title = document.getElementById('hero-title');
+        const text = document.getElementById('hero-text');
+        if(!title || !text) return;
+        if(isRegisteredUser()){
+            title.textContent = state.language === 'en' ? `Welcome, ${state.user.name}` : `Hoş geldin, ${state.user.name}`;
+            text.textContent = state.language === 'en' ? 'Explore communities, share and discuss.' : 'Topluluklarda gez, paylaş ve tartış.';
+        } else {
+            title.textContent = t('welcome');
+            text.textContent = t('welcomeText');
+        }
+    }
+
     function openPostComposer(){
         if(!isRegisteredUser()){
-            alert('Post paylaşmak için önce hesap oluşturmalısınız veya oturum açmalısınız.');
+            showToast('Paylaşmak için oturum aç veya hesap oluştur.', 'error');
             openModal('modal-login');
             return;
         }
@@ -1989,6 +2069,7 @@
         const modal = document.getElementById(id);
         if(!modal) return;
         modal.classList.remove('is-visible');
+        modal.setAttribute('aria-hidden', 'true');
         window.setTimeout(() => { if(!modal.classList.contains('is-visible')) modal.style.display = 'none'; }, 180);
     }
 
@@ -2076,6 +2157,7 @@
         const autoLogin = state.user.settings && state.user.settings.autoLogin;
         const s1 = document.getElementById('setting-show-profile'); if(s1) s1.checked = !!showProf;
         const s2 = document.getElementById('setting-autologin'); if(s2) s2.checked = !!autoLogin;
+        renderWelcome();
     }
 
     function setProfileTab(tab){
@@ -2461,7 +2543,7 @@
 
     function submitPost() {
         if(!isRegisteredUser()){
-            alert('Post paylaşmak için önce hesap oluşturmalısınız veya oturum açmalısınız.');
+            showToast('Paylaşmak için oturum aç veya hesap oluştur.', 'error');
             closeModal('modal-post');
             openModal('modal-login');
             return;
@@ -3075,7 +3157,11 @@
 
     function filterFeed(sub) { 
         if(sub === 'all') { activeSubContext = null; renderPosts(state.posts, t('allFeed')); }
-        else { activeSubContext = sub; renderPosts(state.posts.filter(p => p.sub === sub), 'i/' + sub); }
+        else {
+            const name = normalizeSubName(sub);
+            activeSubContext = name;
+            renderPosts(state.posts.filter(p => normalizeSubName(p.sub) === name), 'i/' + name);
+        }
     }
 
     function saveProfile() {
@@ -3228,8 +3314,7 @@
 
     // ===== USER PROFILE VIEW =====
     function openUserProfile(username){
-        const user = (state.users || []).find(u=>u.name === username);
-        if(!user) return alert('Kullanıcı bulunamadı');
+        const user = (state.users || []).find(u=>u.name === username) || (state.user && state.user.name === username ? state.user : { name: username, bio: '', karma: getAuthorKarma(username), following: [] });
         document.getElementById('user-profile-title').innerText = username;
         document.getElementById('user-profile-name').innerText = user.name;
         document.getElementById('user-profile-bio').innerText = user.bio || '(Biyografi yok)';
