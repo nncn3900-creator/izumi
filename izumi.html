@@ -938,7 +938,6 @@
         <div style="padding:8px 12px; color:var(--text-muted); font-size:0.9rem; display:flex; align-items:center; gap:8px;"><span data-i18n="session">Oturum</span>: <div id="current-user-avatar" style="width:28px; height:28px; border-radius:6px; background:var(--muted-bg); display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem">A</div> <span id="current-user">Anon</span></div>
         <a class="nav-link active" onclick="filterFeed('all')"><i class="fa-solid fa-house"></i> <span data-i18n="home">Ana Akış</span></a>
         <a class="nav-link" onclick="openNotifications()"><i class="fa-solid fa-bell"></i> <span data-i18n="notifications">Bildirimler</span> <span id="notification-count" class="notification-badge" style="display:none">0</span></a>
-        <a class="nav-link" onclick="openAuthModal('login')"><i class="fa-solid fa-right-to-bracket"></i> <span>Oturum Aç</span></a>
         <a class="nav-link" onclick="openAuthModal('register')"><i class="fa-solid fa-user-plus"></i> <span>Kayıt Ol</span></a>
         <a class="nav-link" onclick="openModal('modal-sub')"><i class="fa-solid fa-plus"></i> <span data-i18n="createSub">Sub Oluştur</span></a>
         <a class="nav-link" onclick="openModal('modal-profile')"><i class="fa-solid fa-user-gear"></i> <span data-i18n="profileSettings">Profil Ayarları</span></a>
@@ -1042,13 +1041,6 @@
     </aside>
 </div>
 
-<div class="mobile-nav" aria-label="Mobil navigasyon">
-    <button type="button" onclick="filterFeed('all')"><i class="fa-solid fa-house"></i><span data-i18n="home">Ana Akış</span></button>
-    <button type="button" onclick="setFeedMode('discover')"><i class="fa-solid fa-compass"></i><span data-i18n="discover">Keşfet</span></button>
-    <button type="button" onclick="openMobileSubs()"><i class="fa-solid fa-hashtag"></i><span data-i18n="subsTitle">Sub'lar</span></button>
-    <button type="button" onclick="openModal('modal-profile')"><i class="fa-solid fa-user"></i><span data-i18n="profileSettings">Profil</span></button>
-</div>
-
 <button type="button" class="mobile-menu-toggle" aria-label="Menüyü aç" aria-expanded="false" onclick="toggleMobileMenu()">
     <i class="fa-solid fa-bars"></i>
 </button>
@@ -1066,7 +1058,6 @@
     <a class="nav-link" onclick="closeMobileMenu(); filterFeed('all')"><i class="fa-solid fa-house"></i> <span data-i18n="home">Ana Akış</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); setFeedMode('discover')"><i class="fa-solid fa-compass"></i> <span data-i18n="discover">Keşfet</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); openNotifications()"><i class="fa-solid fa-bell"></i> <span data-i18n="notifications">Bildirimler</span></a>
-    <a class="nav-link" onclick="closeMobileMenu(); openAuthModal('login')"><i class="fa-solid fa-right-to-bracket"></i> <span>Oturum Aç</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); openAuthModal('register')"><i class="fa-solid fa-user-plus"></i> <span>Kayıt Ol</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-sub')"><i class="fa-solid fa-plus"></i> <span data-i18n="createSub">Sub Oluştur</span></a>
     <a class="nav-link" onclick="closeMobileMenu(); openModal('modal-profile')"><i class="fa-solid fa-user-gear"></i> <span data-i18n="profileSettings">Profil Ayarları</span></a>
@@ -1277,6 +1268,9 @@
             <input class="input-field" id="login-username" placeholder="Rumuz" data-placeholder-tr="Rumuz" data-placeholder-en="Username">
             <input class="input-field" id="login-password" type="password" placeholder="Parola" data-placeholder-tr="Parola" data-placeholder-en="Password">
             <button class="btn-primary" onclick="loginSelected()">Oturum Aç</button>
+            <div class="auth-switch">
+                <button type="button" onclick="openAuthModal('register')">Hesabın yok mu? Kayıt Ol</button>
+            </div>
         </div>
     </div>
 </div>
@@ -1294,6 +1288,9 @@
             <input class="input-field" id="new-password" type="password" placeholder="Parola (güçlü olmalı)" data-placeholder-tr="Parola (güçlü olmalı)" data-placeholder-en="Password (must be strong)">
             <div id="password-strength" style="font-size:0.85rem; color:var(--text-muted); display:flex; align-items:center; gap:8px;"></div>
             <button class="btn-primary" onclick="createAndLogin()">Hesap Oluştur</button>
+            <div class="auth-switch">
+                <button type="button" onclick="openAuthModal('login')">Zaten hesabın var mı? Oturum Aç</button>
+            </div>
         </div>
     </div>
 </div>
@@ -2018,6 +2015,10 @@
     }
 
     function openAuthModal(mode){
+        // Ana menüde yalnızca Kayıt Ol görünür. Oturum Aç'a geçiş
+        // sadece formun altındaki küçük butondan yapılır.
+        closeModal('modal-login');
+        closeModal('modal-register');
         const target = mode === 'register' ? 'modal-register' : 'modal-login';
         openModal(target);
     }
