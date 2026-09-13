@@ -106,10 +106,13 @@ function mergeState(current, incoming){
     ...(previous.deletedPostIds || []),
     ...(next.deletedPostIds || [])
   ].map(id => Number(id)).filter(Number.isFinite)));
+  const reactivatedSubNames = new Set(
+    (Array.isArray(next.subs) ? next.subs : []).map(sub => normalizeSubName(sub && sub.name)).filter(Boolean)
+  );
   const deletedSubNames = Array.from(new Set([
     ...(previous.deletedSubNames || []),
     ...(next.deletedSubNames || [])
-  ].map(normalizeSubName).filter(Boolean)));
+  ].map(normalizeSubName).filter(Boolean))).filter(name => !reactivatedSubNames.has(name));
   const isDeletedSub = sub => deletedSubNames.includes(normalizeSubName(sub && sub.name));
   const isDeletedSubName = name => deletedSubNames.includes(normalizeSubName(name));
   return {

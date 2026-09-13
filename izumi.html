@@ -1105,7 +1105,17 @@
         </div>
         <input class="input-field" id="sub-name" placeholder="Sub adı (ör. yazilim)">
         <textarea class="textarea-field" id="sub-desc" placeholder="Kısa açıklama (isteğe bağlı)"></textarea>
-        <div style="text-align:right;"><button class="btn-primary" onclick="submitSub()" data-i18n="create">Oluştur</button></div>
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:8px;" data-i18n="subAvatarHint">Sub için profil fotoğrafı (isteğe bağlı)</div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:6px;">
+            <div id="sub-avatar-preview" class="avatar" style="width:64px; height:64px; flex:0 0 64px; overflow:hidden;">#</div>
+            <div style="flex:1; min-width:160px;">
+                <input type="file" id="sub-avatar-file" accept="image/*">
+                <input type="hidden" id="sub-avatar-type">
+                <input type="hidden" id="sub-avatar-src">
+                <div id="sub-avatar-upload-preview" style="margin-top:6px;"></div>
+            </div>
+        </div>
+        <div style="text-align:right; margin-top:10px;"><button class="btn-primary" onclick="submitSub()" data-i18n="create">Oluştur</button></div>
     </div>
 </div>
 
@@ -2521,13 +2531,29 @@
 
         // assign owner as current user and default deletePermission
         const owner = state.user && state.user.name ? state.user.name : 'system';
-        state.subs.push({ name, desc, owner, admins: [], avatar: '', deletePermission: 'owner', commentDeletePermission: 'author' });
+        const avatarSrcInput = document.getElementById('sub-avatar-src');
+        const avatar = avatarSrcInput ? avatarSrcInput.value || '' : '';
+        state.subs.push({ name, desc, owner, admins: [], avatar, deletePermission: 'owner', commentDeletePermission: 'author' });
         saveState();
         renderSubs();
         closeModal('modal-sub');
         nameInput.value = '';
         descInput.value = '';
+        resetSubAvatarComposer();
         showToast('Sub oluşturuldu.');
+    }
+
+    function resetSubAvatarComposer(){
+        const typeInput = document.getElementById('sub-avatar-type');
+        const srcInput = document.getElementById('sub-avatar-src');
+        const fileInput = document.getElementById('sub-avatar-file');
+        const preview = document.getElementById('sub-avatar-preview');
+        const uploadPreview = document.getElementById('sub-avatar-upload-preview');
+        if(typeInput) typeInput.value = '';
+        if(srcInput) srcInput.value = '';
+        if(fileInput) fileInput.value = '';
+        if(preview) preview.innerHTML = '#';
+        if(uploadPreview) uploadPreview.innerHTML = '';
     }
 
     function resetPostComposer(){
