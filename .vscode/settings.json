@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd /home/izana/Downloads/Hentaimini && node - <<'NODE'\nconst fs=require\\('fs'\\);\nconst vm=require\\('vm'\\);\nconst context=\\{window:\\{\\}\\};\nvm\\.createContext\\(context\\);\nvm\\.runInContext\\(fs\\.readFileSync\\('public/videos\\.js','utf8'\\), context\\);\nconst video=context\\.window\\.STATIC_VIDEOS\\.at\\(-1\\);\nconsole\\.log\\('static_video_count=', context\\.window\\.STATIC_VIDEOS\\.length\\);\nconsole\\.log\\('embed_added=', video\\.embedSrc\\.includes\\('4AoY78AlBMHKRJ9'\\)\\);\nconsole\\.log\\('thumbnail_added=', video\\.thumbnail\\.includes\\('zVVoZ1vLD1TYPYK\\.jpg'\\)\\);\nNODE$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

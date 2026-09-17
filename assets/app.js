@@ -31,10 +31,27 @@ function fileToDataUrl(file, cb){
     reader.readAsDataURL(file);
 }
 
+async function uploadMediaFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/upload-media', {
+        method: 'POST',
+        body: formData
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if(!response.ok || !payload.ok || !payload.url) {
+        throw new Error(payload.message || payload.error || 'Dosya yüklenemedi.');
+    }
+
+    return payload;
+}
+
 function bindMediaInput(inputId, typeId, sourceId, previewId){
     const input = document.getElementById(inputId);
     if(!input) return;
-    input.addEventListener('change', (event)=>{
+    input.addEventListener('change', async (event)=>{
         const file = event.target.files && event.target.files[0];
         if(!file) return;
         const isImage = file.type.startsWith('image/');
@@ -44,41 +61,41 @@ function bindMediaInput(inputId, typeId, sourceId, previewId){
             alert('Yalnızca görsel veya video dosyası yükleyebilirsiniz.');
             return;
         }
-        const maxSize = isVideo ? 12 * 1024 * 1024 : 5 * 1024 * 1024;
+        const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
         if(file.size > maxSize){
             input.value = '';
-            alert(isVideo ? 'Video boyutu en fazla 12 MB olabilir.' : 'Görsel boyutu en fazla 5 MB olabilir.');
+            alert(isVideo ? 'Video boyutu en fazla 50 MB olabilir.' : 'Görsel boyutu en fazla 10 MB olabilir.');
             return;
         }
-        fileToDataUrl(file, (error, data)=>{
-            if(error){
-                input.value = '';
-                alert(error.message);
-                return;
-            }
+
+        try {
+            const result = await uploadMediaFile(file);
             const type = isVideo ? file.type : 'image';
             const targetType = document.getElementById(typeId);
             const targetSource = document.getElementById(sourceId);
             if(targetType) targetType.value = type;
-            if(targetSource) targetSource.value = data;
+            if(targetSource) targetSource.value = result.url;
             const preview = document.getElementById(previewId);
             if(!preview) return;
             preview.innerHTML = '';
             const previewClass = previewId.includes('comment') ? 'comment-image' : 'post-image';
             if(type === 'image'){
                 const image = document.createElement('img');
-                image.src = data;
+                image.src = result.url;
                 image.className = previewClass;
                 image.alt = 'Görsel önizleme';
                 preview.appendChild(image);
             } else {
                 const video = document.createElement('video');
-                video.src = data;
+                video.src = result.url;
                 video.controls = true;
                 video.className = previewClass;
                 preview.appendChild(video);
             }
-        });
+        } catch (error) {
+            input.value = '';
+            alert(error.message || 'Dosya yüklenemedi.');
+        }
     });
 }
 
@@ -92,40 +109,41 @@ function handleCommentMediaInput(input, typeId, sourceId, previewId){
         alert('Yalnızca görsel veya video dosyası yükleyebilirsiniz.');
         return;
     }
-    const maxSize = isVideo ? 12 * 1024 * 1024 : 5 * 1024 * 1024;
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
     if(file.size > maxSize){
         input.value = '';
-        alert(isVideo ? 'Video boyutu en fazla 12 MB olabilir.' : 'Görsel boyutu en fazla 5 MB olabilir.');
+        alert(isVideo ? 'Video boyutu en fazla 50 MB olabilir.' : 'Görsel boyutu en fazla 10 MB olabilir.');
         return;
     }
-    fileToDataUrl(file, (error, data)=>{
-        if(error){
+
+    uploadMediaFile(file)
+        .then((result) => {
+            const targetType = document.getElementById(typeId);
+            const targetSource = document.getElementById(sourceId);
+            const preview = document.getElementById(previewId);
+            if(targetType) targetType.value = isVideo ? file.type : 'image';
+            if(targetSource) targetSource.value = result.url;
+            if(!preview) return;
+            preview.innerHTML = '';
+            const previewClass = previewId.includes('comment') ? 'comment-image' : 'post-image';
+            if(isImage){
+                const image = document.createElement('img');
+                image.src = result.url;
+                image.className = previewClass;
+                image.alt = 'Yorum görseli';
+                preview.appendChild(image);
+            } else {
+                const video = document.createElement('video');
+                video.src = result.url;
+                video.controls = true;
+                video.className = previewClass;
+                preview.appendChild(video);
+            }
+        })
+        .catch((error) => {
             input.value = '';
-            alert(error.message);
-            return;
-        }
-        const targetType = document.getElementById(typeId);
-        const targetSource = document.getElementById(sourceId);
-        const preview = document.getElementById(previewId);
-        if(targetType) targetType.value = isVideo ? file.type : 'image';
-        if(targetSource) targetSource.value = data;
-        if(!preview) return;
-        preview.innerHTML = '';
-        const previewClass = previewId.includes('comment') ? 'comment-image' : 'post-image';
-        if(isImage){
-            const image = document.createElement('img');
-            image.src = data;
-            image.className = previewClass;
-            image.alt = 'Yorum görseli';
-            preview.appendChild(image);
-        } else {
-            const video = document.createElement('video');
-            video.src = data;
-            video.controls = true;
-            video.className = previewClass;
-            preview.appendChild(video);
-        }
-    });
+            alert(error.message || 'Dosya yüklenemedi.');
+        });
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{

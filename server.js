@@ -5,12 +5,73 @@ const cors = require('cors');
 const http = require('http');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
 const { Server } = require('socket.io');
 
 const DB_PATH = path.join(__dirname, 'db.json');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, { cors: { origin: '*' } });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+      cb(null, UPLOADS_DIR);
+    },
+    filename: (req, file, cb) => {
+      const safeName = `${Date.now()}-${String(file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      cb(null, safeName);
+    }
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if(!file || (!file.mimetype.startsWith('image/') && !file.mimetype.startsWith('video/'))) {
+      return cb(new Error('invalid_file_type'));
+    }
+    cb(null, true);
+  }
+});
+
+async function uploadToRemoteStorage(file) {
+  const configuredUrl = process.env.STREAMTAPE_UPLOAD_URL || process.env.STREAMTAPE_API_URL || null;
+  const apiLogin = process.env.STREAMTAPE_API_LOGIN || process.env.STREAMTAPE_LOGIN || null;
+  const apiKey = process.env.STREAMTAPE_API_KEY || process.env.STREAMTAPE_KEY || null;
+  const token = process.env.STREAMTAPE_TOKEN || null;
+
+  if(!configuredUrl) {
+    const publicUrl = `${getPublicBaseUrl({ protocol: 'http', get: (header) => {
+      if(header === 'host') return 'localhost';
+      return '';
+    } })}/uploads/${file.filename}`;
+    return publicUrl;
+  }
+
+  const formData = new FormData();
+  formData.append('file', new Blob([fs.readFileSync(file.path)], { type: file.mimetype }), file.originalname);
+  if(apiLogin) formData.append('login', apiLogin);
+  if(apiKey) formData.append('key', apiKey);
+  if(token) formData.append('token', token);
+
+  const response = await fetch(configuredUrl, {
+    method: 'POST',
+    body: formData
+  });
+
+  if(!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Remote upload failed: ${response.status} ${errorText}`);
+  }
+
+  const payload = await response.json().catch(() => ({}));
+  const nextUrl = payload?.result?.url || payload?.result?.file || payload?.result?.files?.[0]?.url || payload?.url || payload?.file || payload?.link;
+  if(!nextUrl) {
+    throw new Error('Remote upload succeeded but no file URL was returned.');
+  }
+
+  return nextUrl;
+}
 
 // If izumi is deployed behind a reverse proxy (Render, Nginx, etc.), this makes
 // req.ip reflect the real client IP instead of the proxy's IP, so per-IP rate
@@ -468,6 +529,24 @@ app.get('/robots.txt', (req, res)=>{
 });
 
 app.get('/db.json', (req, res)=>res.status(404).json({ error: 'not_found' }));
+
+app.post('/api/upload-media', upload.single('file'), async (req, res) => {
+  try {
+    if(!req.file) return res.status(400).json({ ok: false, error: 'missing_file' });
+
+    const isImage = req.file.mimetype.startsWith('image/');
+    const isVideo = req.file.mimetype.startsWith('video/');
+    if(!isImage && !isVideo) return res.status(400).json({ ok: false, error: 'invalid_file_type' });
+
+    const uploadUrl = await uploadToRemoteStorage(req.file);
+    res.json({ ok: true, url: uploadUrl, type: isVideo ? req.file.mimetype : 'image' });
+  } catch (error) {
+    console.error('upload-media error:', error.message);
+    res.status(500).json({ ok: false, error: 'upload_failed', message: error.message });
+  }
+});
+
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // serve static files (frontend)
 app.use(express.static(__dirname));

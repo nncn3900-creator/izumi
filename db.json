@@ -622,77 +622,95 @@
       }
     ],
     "saved": [],
-    "activeSubs": [],
+    "activeSubs": [
+      "genel",
+      "yazilim",
+      "dizi-anime",
+      "sohbet",
+      "tasarim",
+      "oyun",
+      "teknoloji"
+    ],
     "users": [
       {
         "id": 1001,
         "name": "dev_deniz",
         "bio": "arch & backend",
         "karma": 12,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1002,
         "name": "code_crafter",
         "bio": "fullstack dev",
         "karma": 25,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1003,
         "name": "shadow_walker",
         "bio": "anime & gaming",
         "karma": 8,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1004,
         "name": "yolun_basindaki",
         "bio": "junior dev",
         "karma": 3,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1005,
         "name": "mırnav_sever",
         "bio": "kedi annesi/babası",
         "karma": 15,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1006,
         "name": "tech_lead_99",
         "bio": "system architect",
         "karma": 42,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1007,
         "name": "night_coder",
         "bio": "night owl",
         "karma": 19,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1008,
         "name": "pixel_artisan",
         "bio": "designer",
         "karma": 7,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1009,
         "name": "otaku_prime",
         "bio": "anime lover",
         "karma": 30,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       },
       {
         "id": 1010,
         "name": "forum_veteran",
         "bio": "old school internet",
         "karma": 50,
-        "createdAt": 1789335430621
+        "createdAt": 1789335430621,
+        "subscriptions": []
       }
     ],
     "comments": [],
@@ -706,5 +724,5 @@
     "notifications": [],
     "feedMode": "all"
   },
-  "updatedAt": 1789335430621
+  "updatedAt": 1789478012770
 }
